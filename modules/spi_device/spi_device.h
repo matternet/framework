@@ -4,7 +4,16 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+/* If the CPHA bit is set, the second edge on the SCK pin captures the first data bit transacted
+   (falling edge if the CPOL bit is reset, rising edge if the CPOL bit is set). Data are latched on
+   each occurrence of this clock transition type. If the CPHA bit is reset, the first edge on the
+   SCK pin captures the first data bit transacted (falling edge if the CPOL bit is set, rising edge
+   if the CPOL bit is reset). Data are latched on each occurrence of this clock transition type. */
 #define SPI_DEVICE_FLAG_CPHA     (1<<0)
+/* The CPOL (clock polarity) bit controls the idle state value of the clock when no data is being transferred.
+   This bit affects both master and slave modes.
+   If CPOL is reset, the SCK pin has a low-level idle state.
+   If CPOL is set, the SCK pin has a high-level idle state. */
 #define SPI_DEVICE_FLAG_CPOL     (1<<1)
 #define SPI_DEVICE_FLAG_LSBFIRST (1<<2)
 #define SPI_DEVICE_FLAG_SELPOL   (1<<3)
