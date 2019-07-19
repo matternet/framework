@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#define STM32F302x8
+#define STM32F302xE
 
 #define BOARD_PARAM1_FLASH_SIZE ((size_t)&_param1_flash_sec_end - (size_t)&_param1_flash_sec)
 #define BOARD_PARAM2_FLASH_SIZE ((size_t)&_param2_flash_sec_end - (size_t)&_param2_flash_sec)
