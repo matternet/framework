@@ -19,14 +19,15 @@
 #define SPI_DEVICE_FLAG_SELPOL   (1<<3)
 
 struct spi_device_s {
-    uint32_t max_speed_hz;
-    uint32_t sel_line;
-    uint8_t bus_idx;
-    uint8_t data_size;
-    uint8_t flags;
-    bool bus_acquired;
+    uint32_t  max_speed_hz;   // XXX: Looking at spi_device.c, it's not clear if/how this is enforced
+    uint32_t  sel_line;       // GIPO for SW chip select device pin (device driver does not use HW "NSS" pins)
+    uint8_t   bus_idx;        // STM32 parts have up to four SPI ports; SPI1-SPI4 => bus_idx 1-4
+    uint8_t   data_size;      // valid values = 4-16
+    uint8_t   flags;          // CR1 flags such as SPI_DEVICE_FLAG_CPHA, SPI_DEVICE_FLAG_LSBFIRST
+                              // XXX: Not all CR1 HW bits in flags value get used by the device driver
 
-    SPIConfig spiconf;
+    bool      bus_acquired;   // partial state of device driver
+    SPIConfig spiconf;        // ChibiOS HAL
 };
 
 

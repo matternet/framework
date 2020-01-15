@@ -3,9 +3,9 @@
 #define FLAG_BIT_VAL(flags, bit) ((flags&bit) != 0 ? 1 : 0)
 
 static SPIDriver* spi_get_driver(uint8_t bus_idx);
-static SPIConfig spi_make_config(struct spi_device_s* dev);
-static void spi_device_assert_chip_select(struct spi_device_s* dev);
-static void spi_device_deassert_chip_select(struct spi_device_s* dev);
+static SPIConfig  spi_make_config(struct spi_device_s* dev);
+static void       spi_device_assert_chip_select(struct spi_device_s* dev);
+static void       spi_device_deassert_chip_select(struct spi_device_s* dev);
 
 bool spi_device_init(struct spi_device_s* dev, uint8_t bus_idx, uint32_t sel_line, uint32_t max_speed_hz, uint8_t data_size, uint8_t flags) {
     if (!dev) {
@@ -16,11 +16,11 @@ bool spi_device_init(struct spi_device_s* dev, uint8_t bus_idx, uint32_t sel_lin
         return false;
     }
 
-    dev->bus_idx = bus_idx;
-    dev->sel_line = sel_line;
+    dev->bus_idx      = bus_idx;
+    dev->sel_line     = sel_line;
     dev->max_speed_hz = max_speed_hz;
-    dev->data_size = data_size;
-    dev->flags = flags;
+    dev->data_size    = data_size;
+    dev->flags        = flags;
     dev->bus_acquired = false;
 
     spi_device_deassert_chip_select(dev);
@@ -133,9 +133,9 @@ static SPIConfig spi_make_config(struct spi_device_s* dev) {
     SPIConfig ret;
     ret.end_cb = NULL;
     ret.ssport = 0;
-    ret.sspad = 0;
-    ret.cr1 = ((br_regval&0b111)<<3) | (FLAG_BIT_VAL(dev->flags,SPI_DEVICE_FLAG_CPHA)<<0) | (FLAG_BIT_VAL(dev->flags,SPI_DEVICE_FLAG_CPOL)<<1) | (FLAG_BIT_VAL(dev->flags,SPI_DEVICE_FLAG_LSBFIRST)<<7);
-    ret.cr2 = (((dev->data_size-1)&0b1111)<<8);
+    ret.sspad  = 0;
+    ret.cr1    = ((br_regval&0b111)<<3) | (FLAG_BIT_VAL(dev->flags,SPI_DEVICE_FLAG_CPHA)<<0) | (FLAG_BIT_VAL(dev->flags,SPI_DEVICE_FLAG_CPOL)<<1) | (FLAG_BIT_VAL(dev->flags,SPI_DEVICE_FLAG_LSBFIRST)<<7);
+    ret.cr2    = (((dev->data_size-1)&0b1111)<<8);
     return ret;
 }
 
