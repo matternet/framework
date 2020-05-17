@@ -19,7 +19,7 @@ void uavcan_send_debug_msg(uint8_t debug_level, char* source, const char *fmt, .
     /* Memory stream object to be used as a string writer */
     msObjectInit(&ms, (uint8_t *)log_msg.text, sizeof(log_msg.text), 0);
 
-    /* Print into the log_msg.text. Don't use chsprintf(), because null-terminated
+    /* Print into the log_msg.text. Don't use chsnprintf(), because null-terminated
        strings will clip to 89 usable chars, instead of 90. By using chvprintf()
        with a MemoryStream, we are able to use all 90 characters of log_msg.text. */
     chp = (BaseSequentialStream *)(void *)&ms;
