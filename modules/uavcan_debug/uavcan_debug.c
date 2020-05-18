@@ -14,16 +14,19 @@ void uavcan_send_debug_msg(uint8_t debug_level, char* source, const char *fmt, .
     va_list ap;
     MemoryStream ms;
     BaseSequentialStream *chp;
+    size_t printf_len;
 
-    /* Memory stream object to be used as a string writer, reserving one
-     byte for the final zero.*/
+    /* Memory stream object to be used as a string writer */
     msObjectInit(&ms, (uint8_t *)log_msg.text, sizeof(log_msg.text), 0);
 
-    /* Performing the print operation using the common code.*/
+    /* Print into the log_msg.text. Don't use chsnprintf(), because null-terminated
+       strings will clip to 89 usable chars, instead of 90. By using chvprintf()
+       with a MemoryStream, we are able to use all 90 characters of log_msg.text. */
     chp = (BaseSequentialStream *)(void *)&ms;
     va_start(ap, fmt);
-    log_msg.text_len = MIN((size_t)chvprintf(chp, fmt, ap), sizeof(log_msg.text));
+    printf_len = (size_t)chvprintf(chp, fmt, ap);
     va_end(ap);
+    log_msg.text_len = MIN(printf_len, sizeof(log_msg.text));
 
     log_msg.source_len = strnlen(source, sizeof(log_msg.source));
     memcpy(log_msg.source, source, log_msg.source_len);
