@@ -7,7 +7,7 @@
 #include <chprintf.h>
 #include <memstreams.h>
 
-void uavcan_send_debug_msg(uint8_t debug_level, char* source, const char *fmt, ...)
+void uavcan_send_debug_msg(uint8_t debug_level, const char* source, const char *fmt, ...)
 {
     struct uavcan_protocol_debug_LogMessage_s log_msg;
 
@@ -36,7 +36,7 @@ void uavcan_send_debug_msg(uint8_t debug_level, char* source, const char *fmt, .
     uavcan_broadcast(0, &uavcan_protocol_debug_LogMessage_descriptor, CANARD_TRANSFER_PRIORITY_LOWEST, &log_msg);
 }
 
-void uavcan_send_debug_keyvalue(char* key, float value)
+void uavcan_send_debug_keyvalue(const char* key, float value)
 {
     struct uavcan_protocol_debug_KeyValue_s log_kv;
     log_kv.value = value;
