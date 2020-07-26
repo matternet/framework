@@ -8,5 +8,5 @@
 #define LOG_LEVEL_WARNING UAVCAN_PROTOCOL_DEBUG_LOGLEVEL_WARNING
 #define LOG_LEVEL_ERROR UAVCAN_PROTOCOL_DEBUG_LOGLEVEL_ERROR
 
-void uavcan_send_debug_msg(uint8_t debug_level, const char* source, const char *fmt, ...);
+void uavcan_send_debug_msg(uint8_t debug_level, const char* source, const char* fmt, ...);
 void uavcan_send_debug_keyvalue(const char* key, float value);

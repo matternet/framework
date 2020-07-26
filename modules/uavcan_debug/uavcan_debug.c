@@ -7,7 +7,7 @@
 #include <chprintf.h>
 #include <memstreams.h>
 
-void uavcan_send_debug_msg(uint8_t debug_level, const char* source, const char *fmt, ...)
+void uavcan_send_debug_msg(uint8_t debug_level, const char* source, const char* fmt, ...)
 {
     struct uavcan_protocol_debug_LogMessage_s log_msg;
 
