@@ -41,13 +41,13 @@ static void getset_req_handler(size_t msg_size, const void* buf, void* ctx) {
 
     param_acquire();
 
-    int16_t param_idx = req->index;
+    int16_t param_idx = (int16_t)req->index;   // uavcan.protocol.param.GetSet: uint13 index
     if (req->name_len > 0) {
         // If the name field is not empty, we are to prefer it over the param index field
         param_idx = param_get_index_by_name(req->name_len, (char*)req->name);
     }
 
-    if (param_get_exists(param_idx)) {
+    if ((param_idx >= 0) && param_get_exists(param_idx)) {
         switch(req->value.uavcan_protocol_param_Value_type) {
             case UAVCAN_PROTOCOL_PARAM_VALUE_TYPE_INTEGER_VALUE: {
                 // set request: int64
@@ -74,8 +74,13 @@ static void getset_req_handler(size_t msg_size, const void* buf, void* ctx) {
         }
 
         const char* param_name = param_get_name_by_index(param_idx);
-        res.name_len = strnlen(param_name,92);
-        memcpy(res.name, param_name, res.name_len);
+        if (param_name == NULL) {
+            // This shouldn't be possible, but let's be defensive
+            res.name_len = 0;
+        } else {
+            res.name_len = strnlen(param_name,92);
+            memcpy(res.name, param_name, res.name_len);
+        }
 
         switch(param_get_type_by_index(param_idx)) {
             case PARAM_TYPE_STRING:

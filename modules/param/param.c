@@ -101,6 +101,7 @@ void param_register(const struct param_descriptor_header_s* param_descriptor_hea
         for (uint32_t i=0; i<new_param_idx; i++) {
             if(!memcmp(&param_keys[i], &param_keys[new_param_idx], sizeof(struct param_key_s))) {
                 // Double registration or hash collision
+                param_release();
                 return;
             }
         }
@@ -152,6 +153,8 @@ enum param_type_t param_get_type_by_index(uint16_t param_idx) {
     return descriptor->type;
 }
 
+// Return the index of named parameter.
+// If parameter name is invalid or does not exist, returns -1.
 int16_t param_get_index_by_name(uint8_t name_len, char* name) {
     if (name_len > 92) {
         return -1;
