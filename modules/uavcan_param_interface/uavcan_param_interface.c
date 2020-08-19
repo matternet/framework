@@ -38,6 +38,7 @@ static void getset_req_handler(size_t msg_size, const void* buf, void* ctx) {
 
     struct uavcan_protocol_param_GetSet_res_s res;
     memset(&res, 0, sizeof(struct uavcan_protocol_param_GetSet_res_s));
+    // NOTE: ^^^ Among other things, this will set res.name_len to 0, indicating "no such parameter" by default.
 
     param_acquire();
 
@@ -74,10 +75,7 @@ static void getset_req_handler(size_t msg_size, const void* buf, void* ctx) {
         }
 
         const char* param_name = param_get_name_by_index(param_idx);
-        if (param_name == NULL) {
-            // This shouldn't be possible, but let's be defensive
-            res.name_len = 0;
-        } else {
+        if (param_name != NULL) {  // NULL shouldn't be possible, but let's be defensive
             res.name_len = strnlen(param_name,92);
             memcpy(res.name, param_name, res.name_len);
         }
