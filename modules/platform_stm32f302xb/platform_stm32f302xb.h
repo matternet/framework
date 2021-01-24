@@ -2,7 +2,8 @@
 
 #include <stdint.h>
 
-#define STM32F302xB
+// NOTE: in the CMSIS (stm32f3xx.h), this is #define used for the STM32F302xB
+#define STM32F302xC
 
 #define BOARD_PARAM1_FLASH_SIZE ((size_t)&_param1_flash_sec_end - (size_t)&_param1_flash_sec)
 #define BOARD_PARAM2_FLASH_SIZE ((size_t)&_param2_flash_sec_end - (size_t)&_param2_flash_sec)
