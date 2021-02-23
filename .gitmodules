@@ -1,10 +1,10 @@
 [submodule "libcanard"]
 	path = modules/uavcan/libcanard
 	url = git@github.com:matternet/libcanard.git
-	branch = forget-uavcan-nodeid
 [submodule "dsdl"]
 	path = dsdl
-	url = git@github.com:UAVCAN/dsdl.git
+	url = git@github.com:matternet/public_regulated_data_types.git
+	branch = legacy-v0
 [submodule "ChibiOS"]
 	path = ChibiOS
 	url = git@github.com:matternet/ChibiOS.git
