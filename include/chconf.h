@@ -101,7 +101,7 @@
  * @note    The default is @p TRUE.
  */
 #ifndef CH_CFG_USE_WAITEXIT
-#define CH_CFG_USE_WAITEXIT                 FALSE
+#define CH_CFG_USE_WAITEXIT                 TRUE
 #endif
 
 /**
@@ -111,7 +111,7 @@
  * @note    The default is @p TRUE.
  */
 #ifndef CH_CFG_USE_SEMAPHORES
-#define CH_CFG_USE_SEMAPHORES               FALSE
+#define CH_CFG_USE_SEMAPHORES               TRUE
 #endif
 
 /**
@@ -180,7 +180,7 @@
  * @note    The default is @p TRUE.
  */
 #ifndef CH_CFG_USE_EVENTS
-#define CH_CFG_USE_EVENTS                   FALSE
+#define CH_CFG_USE_EVENTS                   TRUE
 #endif
 
 /**
@@ -192,7 +192,7 @@
  * @note    Requires @p CH_CFG_USE_EVENTS.
  */
 #ifndef CH_CFG_USE_EVENTS_TIMEOUT
-#define CH_CFG_USE_EVENTS_TIMEOUT           FALSE
+#define CH_CFG_USE_EVENTS_TIMEOUT           TRUE
 #endif
 
 /**
@@ -293,7 +293,7 @@
  * @note    Requires @p CH_CFG_USE_HEAP and/or @p CH_CFG_USE_MEMPOOLS.
  */
 #ifndef CH_CFG_USE_DYNAMIC
-#define CH_CFG_USE_DYNAMIC                  FALSE
+#define CH_CFG_USE_DYNAMIC                  TRUE
 #endif
 
 /**

@@ -135,6 +135,7 @@ INCDIR += $(CHIBIOS)/os/license \
           $(CHIBIOS)/community/os/various \
           $(CHIBIOS)/os/various \
           $(COMMON_INC) \
+          $(CHIBIOS)/os/common/abstractions/cmsis_os \
           $(BUILDDIR)/modules
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global
