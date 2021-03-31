@@ -23,8 +23,7 @@
 
 // NOTE(vwnguyen): Blocking sleep function. Seems to be OK for our application.
 // NOTE(vwnguyen): Seems to be more accurate than using ChThdSleepMicroseconds()
-void ONEWIRE_DELAY(uint32_t time_us)
-{
+void ONEWIRE_DELAY(uint32_t time_us) {
     usleep(time_us);
 }
 
@@ -38,14 +37,11 @@ void ONEWIRE_HIGH(OneWire_t *gp) {
 
 // NOTE(vwnguyen): Time taken to toggle between OUTPUT -> INPUT ~= 4-5us
 // NOTE(vwnguyen): using ONEWIRE_DELAY on top of this toggle time should result
-// NOTE(vwguyen) : in total_delay = toggle_time + delay_time
-
-// set onewire pal line to be configured for input
+// NOTE(vwnguyen): in total_delay = toggle_time + delay_time
 void ONEWIRE_INPUT(OneWire_t *gp) {
     palSetLineMode(gp->PalLine, PAL_MODE_INPUT | PAL_STM32_OSPEED_HIGHEST);
 }
 
-// set onewire pal line to be configured as an output
 void ONEWIRE_OUTPUT(OneWire_t *gp) {
     palSetLineMode(gp->PalLine, PAL_STM32_MODE_OUTPUT | PAL_STM32_OSPEED_HIGHEST);
 }
@@ -66,18 +62,20 @@ void OneWire_Init(OneWire_t* OneWireStruct, uint32_t PalLine) {
 uint8_t OneWire_Reset(OneWire_t* OneWireStruct) {
     uint8_t i;
 
-    /* Line low, and wait 480us */
+    /* Line low, and wait */
     ONEWIRE_LOW(OneWireStruct);
     ONEWIRE_OUTPUT(OneWireStruct);
-    ONEWIRE_DELAY(480);
-    /* Release line and wait for 70us */
+    ONEWIRE_DELAY(ONEWIRE_TX_MIN_RESET_PULSE_TIME_USEC);
+    
+    /* Release line and wait */
     ONEWIRE_INPUT(OneWireStruct);
-    ONEWIRE_DELAY(70);
+    ONEWIRE_DELAY(ONEWIRE_WAIT_PRESENCE_PULSE_TIME_USEC);
+    
     /* Check bit value */
     i = palReadLine(OneWireStruct->PalLine);
 
-    /* Delay for 410 us */
-    ONEWIRE_DELAY(410);
+    /* Complete reset pulse min time */
+    ONEWIRE_DELAY(ONEWIRE_RX_MIN_RESET_PULSE_TIME_USEC);
     /* Return value of presence pulse, 0 = OK, 1 = ERROR */
     return i;
 }
@@ -87,27 +85,27 @@ void OneWire_WriteBit(OneWire_t* OneWireStruct, uint8_t bit) {
         /* Set line low */
         ONEWIRE_LOW(OneWireStruct);
         ONEWIRE_OUTPUT(OneWireStruct);
-        ONEWIRE_DELAY(10);
+        ONEWIRE_DELAY(ONEWIRE_TX_WRITE_1_SLOT_USEC);
 
         /* Bit high */
         ONEWIRE_INPUT(OneWireStruct);
 
         /* Wait for 55 us and release the line */
         ONEWIRE_DELAY(55);
-        ONEWIRE_INPUT(OneWireStruct);
+        // ONEWIRE_INPUT(OneWireStruct);
     }
     else {
         /* Set line low */
         ONEWIRE_LOW(OneWireStruct);
         ONEWIRE_OUTPUT(OneWireStruct);
-        ONEWIRE_DELAY(65);  
+        ONEWIRE_DELAY(ONEWIRE_TX_WRITE_0_SLOT_USEC);  
 
         /* Bit high */
         ONEWIRE_INPUT(OneWireStruct);
 
-        /* Wait for 5 us and release the line */
-        ONEWIRE_DELAY(5);
-        ONEWIRE_INPUT(OneWireStruct);
+        /* Wait for some non-zero amount of time to recover and release the line */
+        ONEWIRE_DELAY(ONEWIRE_TX_RECOVER_TIME_USEC);
+        // ONEWIRE_INPUT(OneWireStruct);
     }
 }
 

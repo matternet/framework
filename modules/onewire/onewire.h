@@ -1,3 +1,23 @@
+/**
+ * |----------------------------------------------------------------------
+ * | Copyright (C) Tilen Majerle, 2014
+ * |
+ * | This program is free software: you can redistribute it and/or modify
+ * | it under the terms of the GNU General Public License as published by
+ * | the Free Software Foundation, either version 3 of the License, or
+ * | any later version.
+ * |
+ * | This program is distributed in the hope that it will be useful,
+ * | but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * | GNU General Public License for more details.
+ * |
+ * | You should have received a copy of the GNU General Public License
+ * | along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * |----------------------------------------------------------------------
+ */
+
+
 
 #ifndef ONEWIRE_H
 #define ONEWIRE_H 100
@@ -8,7 +28,7 @@ extern "C" {
 #endif
 
 // includes to access HAL/PAL calls, need to access directly since abstraction for ChibiOS in framework is lackluster
-#include <hal.h> // <-- all encompasing hal.h include. includes everything related to hal that you would need.
+#include <hal.h>                   // all encompasing hal.h include. includes everything related to hal that you would need.
 #include <modules/timing/timing.h> // need timing module for microsecond level bit-banging
 #include <stdint.h>
 
@@ -22,6 +42,17 @@ extern "C" {
 #define ONEWIRE_CMD_READROM				0x33
 #define ONEWIRE_CMD_MATCHROM			0x55
 #define ONEWIRE_CMD_SKIPROM				0xCC
+
+/* OneWire Constants */
+#define ONEWIRE_TX_MIN_RESET_PULSE_TIME_USEC  480 // min time required to pull line low for reset pulse
+#define ONEWIRE_WAIT_PRESENCE_PULSE_TIME_USEC 70  // time given to other onewire device before we poll for presence pulse 
+#define ONEWIRE_RX_MIN_RESET_PULSE_TIME_USEC  480 - ONEWIRE_WAIT_PRESENCE_PULSE_TIME_USEC // fill out remaining time needed for reset
+
+#define ONEWIRE_TX_WRITE_0_SLOT_USEC 65
+#define ONEWIRE_TX_WRITE_1_SLOT_USEC 5
+#define ONEWIRE_TX_RECOVER_TIME_USEC 5
+#define ONEWIRE_WAIT_SLAVE_READ_BIT_TIME_USEC 55               
+
 
 //#######################################################################################################
 

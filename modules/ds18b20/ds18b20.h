@@ -81,21 +81,31 @@
  * @{
  */
 
+/* More details: https://datasheets.maximintegrated.com/en/ds/DS18B20.pdf */
+
 /* Every onewire chip has different ROM code, but all the same chips has same family code */
 /* in case of DS18B20 this is 0x28 and this is first byte of ROM address */
 #define DS18B20_FAMILY_CODE				0x28
-#define DS18B20_CMD_ALARMSEARCH			0xEC
 
-/* DS18B20 read temperature command */
-#define DS18B20_CMD_CONVERTTEMP			0x44 	/* Convert temperature */
+/* DS18B20 Commands */
+#define DS18B20_CMD_ALARMSEARCH			0xEC
+#define DS18B20_CMD_CONVERTTEMP         0x44    /* Convert temperature */
+
+/* DS18B20 Resolution defines */
 #define DS18B20_DECIMAL_STEPS_12BIT		0.0625
 #define DS18B20_DECIMAL_STEPS_11BIT		0.125
 #define DS18B20_DECIMAL_STEPS_10BIT		0.25
 #define DS18B20_DECIMAL_STEPS_9BIT		0.5
 
 /* Bits locations for resolution */
-#define DS18B20_RESOLUTION_R1			6
-#define DS18B20_RESOLUTION_R0			5
+#define DS18B20_RESOLUTION_R1           6
+#define DS18B20_RESOLUTION_R0           5
+
+/* DS18B20 Common Numbers */
+#define DS18B20_READ_DATA_SIZE          9
+#define DS18B20_READ_CRC_BYTE           9
+#define DS18B20_DATA_LSB                0
+#define DS18B20_DATA_MSB                1
 
 /* CRC enabled */
 #ifdef DS18B20_USE_CRC	

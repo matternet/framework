@@ -56,7 +56,7 @@ uint8_t DS18B20_Read(OneWire_t* OneWire, uint8_t *ROM, float *destination) {
 	int8_t digit, minus = 0;
 	float decimal;
 	uint8_t i = 0;
-	uint8_t data[9];
+	uint8_t data[DS18B20_READ_DATA_SIZE];
 	uint8_t crc;
 	
 	/* Check if device is DS18B20 */
@@ -78,7 +78,7 @@ uint8_t DS18B20_Read(OneWire_t* OneWire, uint8_t *ROM, float *destination) {
 	OneWire_WriteByte(OneWire, ONEWIRE_CMD_RSCRATCHPAD);
 	
 	/* Get data */
-	for (i = 0; i < 9; i++) {
+	for (i = 0; i < DS18B20_READ_DATA_SIZE; i++) {
 		/* Read byte by byte */
 		data[i] = OneWire_ReadByte(OneWire);
 	}
@@ -87,13 +87,13 @@ uint8_t DS18B20_Read(OneWire_t* OneWire, uint8_t *ROM, float *destination) {
 	crc = OneWire_CRC8(data, 8);
 	
 	/* Check if CRC is ok */
-	if (crc != data[8]) {
+	if (crc != data[DS18B20_READ_CRC_BYTE]) {
 		/* CRC invalid */
 		return 0;
 	}
 	
 	/* First two bytes of scratchpad are temperature values */
-	temperature = data[0] | (data[1] << 8);
+	temperature = data[DS18B20_DATA_LSB] | (data[DS18B20_DATA_MSB] << 8);
 
 	/* Reset line */
 	OneWire_Reset(OneWire);
