@@ -26,33 +26,32 @@
 #include "ds18b20.h"
 #include <assert.h>
 
-uint8_t DS18B20_Start(OneWire_t* OneWire, uint8_t *ROM) {
+uint8_t DS18B20_Start(OneWire_t* OneWireStruct, uint8_t *ROM) {
     /* Check if device is DS18B20 */
-    assert(OneWireStruct != NULL);
     if (!DS18B20_Is(ROM)) {
         return 0;
     }
 
     /* Reset line */
-    OneWire_Reset(OneWire);
+    OneWire_Reset(OneWireStruct);
     /* Select ROM number */
-    OneWire_SelectWithPointer(OneWire, ROM);
+    OneWire_SelectWithPointer(OneWireStruct, ROM);
     /* Start temperature conversion */
-    OneWire_WriteByte(OneWire, DS18B20_CMD_CONVERTTEMP);
+    OneWire_WriteByte(OneWireStruct, DS18B20_CMD_CONVERTTEMP);
     
     return 1;
 }
 
-void DS18B20_StartAll(OneWire_t* OneWire) {
+void DS18B20_StartAll(OneWire_t* OneWireStruct) {
     /* Reset pulse */
-    OneWire_Reset(OneWire);
+    OneWire_Reset(OneWireStruct);
     /* Skip rom */
-    OneWire_WriteByte(OneWire, ONEWIRE_CMD_SKIPROM);
+    OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_SKIPROM);
     /* Start conversion on all connected devices */
-    OneWire_WriteByte(OneWire, DS18B20_CMD_CONVERTTEMP);
+    OneWire_WriteByte(OneWireStruct, DS18B20_CMD_CONVERTTEMP);
 }
 
-uint8_t DS18B20_Read(OneWire_t* OneWire, uint8_t *ROM, float *destination) {
+uint8_t DS18B20_Read(OneWire_t* OneWireStruct, uint8_t *ROM, float *destination) {
     uint16_t temperature;
     uint8_t resolution;
     int8_t digit, minus = 0;
@@ -67,22 +66,22 @@ uint8_t DS18B20_Read(OneWire_t* OneWire, uint8_t *ROM, float *destination) {
     }
     
     /* Check if line is released, if it is, then conversion is complete */
-    if (!OneWire_ReadBit(OneWire)) {
+    if (OneWire_ReadBit(OneWireStruct)==0) {
         /* Conversion is not finished yet */
         return 3; 
     }
 
     /* Reset line */
-    OneWire_Reset(OneWire);
+    OneWire_Reset(OneWireStruct);
     /* Select ROM number */
-    OneWire_SelectWithPointer(OneWire, ROM);
-    /* Read scratchpad command by onewire protocol */
-    OneWire_WriteByte(OneWire, ONEWIRE_CMD_RSCRATCHPAD);
+    OneWire_SelectWithPointer(OneWireStruct, ROM);
+    /* Read scratchpad command by OneWireStruct protocol */
+    OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_RSCRATCHPAD);
     
     /* Get data */
     for (i = 0; i < DS18B20_READ_DATA_SIZE; i++) {
         /* Read byte by byte */
-        data[i] = OneWire_ReadByte(OneWire);
+        data[i] = OneWire_ReadByte(OneWireStruct);
     }
     
     /* Calculate CRC */
@@ -98,7 +97,7 @@ uint8_t DS18B20_Read(OneWire_t* OneWire, uint8_t *ROM, float *destination) {
     temperature = data[DS18B20_DATA_LSB] | (data[DS18B20_DATA_MSB] << 8);
 
     /* Reset line */
-    OneWire_Reset(OneWire);
+    OneWire_Reset(OneWireStruct);
     
     /* Check if temperature is negative */
     if (temperature & 0x8000) {
@@ -153,53 +152,52 @@ uint8_t DS18B20_Read(OneWire_t* OneWire, uint8_t *ROM, float *destination) {
     return 1;
 }
 
-uint8_t DS18B20_GetResolution(OneWire_t* OneWire, uint8_t *ROM) {
+uint8_t DS18B20_GetResolution(OneWire_t* OneWireStruct, uint8_t *ROM) {
     uint8_t conf;
-    
     if (!DS18B20_Is(ROM)) {
         return 0;
     }
     
     /* Reset line */
-    OneWire_Reset(OneWire);
+    OneWire_Reset(OneWireStruct);
     /* Select ROM number */
-    OneWire_SelectWithPointer(OneWire, ROM);
-    /* Read scratchpad command by onewire protocol */
-    OneWire_WriteByte(OneWire, ONEWIRE_CMD_RSCRATCHPAD);
+    OneWire_SelectWithPointer(OneWireStruct, ROM);
+    /* Read scratchpad command by OneWireStruct protocol */
+    OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_RSCRATCHPAD);
     
     /* Ignore first 4 bytes */
-    OneWire_ReadByte(OneWire);
-    OneWire_ReadByte(OneWire);
-    OneWire_ReadByte(OneWire);
-    OneWire_ReadByte(OneWire);
+    OneWire_ReadByte(OneWireStruct);
+    OneWire_ReadByte(OneWireStruct);
+    OneWire_ReadByte(OneWireStruct);
+    OneWire_ReadByte(OneWireStruct);
     
     /* 5th byte of scratchpad is configuration register */
-    conf = OneWire_ReadByte(OneWire);
+    conf = OneWire_ReadByte(OneWireStruct);
     
     /* Return 9 - 12 value according to number of bits */
     return ((conf & 0x60) >> 5) + 9;
 }
 
-uint8_t DS18B20_SetResolution(OneWire_t* OneWire, uint8_t *ROM, DS18B20_Resolution_t resolution) {
+uint8_t DS18B20_SetResolution(OneWire_t* OneWireStruct, uint8_t *ROM, DS18B20_Resolution_t resolution) {
     uint8_t th, tl, conf;
     if (!DS18B20_Is(ROM)) {
         return 0;
     }
     
     /* Reset line */
-    OneWire_Reset(OneWire);
+    OneWire_Reset(OneWireStruct);
     /* Select ROM number */
-    OneWire_SelectWithPointer(OneWire, ROM);
-    /* Read scratchpad command by onewire protocol */
-    OneWire_WriteByte(OneWire, ONEWIRE_CMD_RSCRATCHPAD);
+    OneWire_SelectWithPointer(OneWireStruct, ROM);
+    /* Read scratchpad command by OneWireStruct protocol */
+    OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_RSCRATCHPAD);
     
     /* Ignore first 2 bytes */
-    OneWire_ReadByte(OneWire);
-    OneWire_ReadByte(OneWire);
+    OneWire_ReadByte(OneWireStruct);
+    OneWire_ReadByte(OneWireStruct);
     
-    th = OneWire_ReadByte(OneWire);
-    tl = OneWire_ReadByte(OneWire);
-    conf = OneWire_ReadByte(OneWire);
+    th = OneWire_ReadByte(OneWireStruct);
+    tl = OneWire_ReadByte(OneWireStruct);
+    conf = OneWire_ReadByte(OneWireStruct);
     
     if (resolution == DS18B20_Resolution_9bits) {
         conf &= ~(1 << DS18B20_RESOLUTION_R1);
@@ -216,23 +214,23 @@ uint8_t DS18B20_SetResolution(OneWire_t* OneWire, uint8_t *ROM, DS18B20_Resoluti
     }
     
     /* Reset line */
-    OneWire_Reset(OneWire);
+    OneWire_Reset(OneWireStruct);
     /* Select ROM number */
-    OneWire_SelectWithPointer(OneWire, ROM);
-    /* Write scratchpad command by onewire protocol, only th, tl and conf register can be written */
-    OneWire_WriteByte(OneWire, ONEWIRE_CMD_WSCRATCHPAD);
+    OneWire_SelectWithPointer(OneWireStruct, ROM);
+    /* Write scratchpad command by OneWireStruct protocol, only th, tl and conf register can be written */
+    OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_WSCRATCHPAD);
     
     /* Write bytes */
-    OneWire_WriteByte(OneWire, th);
-    OneWire_WriteByte(OneWire, tl);
-    OneWire_WriteByte(OneWire, conf);
+    OneWire_WriteByte(OneWireStruct, th);
+    OneWire_WriteByte(OneWireStruct, tl);
+    OneWire_WriteByte(OneWireStruct, conf);
     
     /* Reset line */
-    OneWire_Reset(OneWire);
+    OneWire_Reset(OneWireStruct);
     /* Select ROM number */
-    OneWire_SelectWithPointer(OneWire, ROM);
+    OneWire_SelectWithPointer(OneWireStruct, ROM);
     /* Copy scratchpad to EEPROM of DS18B20 */
-    OneWire_WriteByte(OneWire, ONEWIRE_CMD_CPYSCRATCHPAD);
+    OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_CPYSCRATCHPAD);
     
     return 1;
 }
@@ -245,159 +243,159 @@ uint8_t DS18B20_Is(uint8_t *ROM) {
     return 0;
 }
 
-uint8_t DS18B20_SetAlarmLowTemperature(OneWire_t* OneWire, uint8_t *ROM, int8_t temp) {
+uint8_t DS18B20_SetAlarmLowTemperature(OneWire_t* OneWireStruct, uint8_t *ROM, int8_t temp) {
     uint8_t tl, th, conf;
     if (!DS18B20_Is(ROM)) {
         return 0;
     }
-    if (temp > 125) {
-        temp = 125;
+    if (temp > DS18B20_MAX_TEMP_DEG_C) {
+        temp = DS18B20_MAX_TEMP_DEG_C;
     } 
     if (temp < -55) {
         temp = -55;
     }
     /* Reset line */
-    OneWire_Reset(OneWire);
+    OneWire_Reset(OneWireStruct);
     /* Select ROM number */
-    OneWire_SelectWithPointer(OneWire, ROM);
-    /* Read scratchpad command by onewire protocol */
-    OneWire_WriteByte(OneWire, ONEWIRE_CMD_RSCRATCHPAD);
+    OneWire_SelectWithPointer(OneWireStruct, ROM);
+    /* Read scratchpad command by OneWireStruct protocol */
+    OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_RSCRATCHPAD);
     
     /* Ignore first 2 bytes */
-    OneWire_ReadByte(OneWire);
-    OneWire_ReadByte(OneWire);
+    OneWire_ReadByte(OneWireStruct);
+    OneWire_ReadByte(OneWireStruct);
     
-    th = OneWire_ReadByte(OneWire);
-    tl = OneWire_ReadByte(OneWire);
-    conf = OneWire_ReadByte(OneWire);
+    th = OneWire_ReadByte(OneWireStruct);
+    tl = OneWire_ReadByte(OneWireStruct);
+    conf = OneWire_ReadByte(OneWireStruct);
     
     tl = (uint8_t)temp; 
 
     /* Reset line */
-    OneWire_Reset(OneWire);
+    OneWire_Reset(OneWireStruct);
     /* Select ROM number */
-    OneWire_SelectWithPointer(OneWire, ROM);
-    /* Write scratchpad command by onewire protocol, only th, tl and conf register can be written */
-    OneWire_WriteByte(OneWire, ONEWIRE_CMD_WSCRATCHPAD);
+    OneWire_SelectWithPointer(OneWireStruct, ROM);
+    /* Write scratchpad command by OneWireStruct protocol, only th, tl and conf register can be written */
+    OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_WSCRATCHPAD);
     
     /* Write bytes */
-    OneWire_WriteByte(OneWire, th);
-    OneWire_WriteByte(OneWire, tl);
-    OneWire_WriteByte(OneWire, conf);
+    OneWire_WriteByte(OneWireStruct, th);
+    OneWire_WriteByte(OneWireStruct, tl);
+    OneWire_WriteByte(OneWireStruct, conf);
     
     /* Reset line */
-    OneWire_Reset(OneWire);
+    OneWire_Reset(OneWireStruct);
     /* Select ROM number */
-    OneWire_SelectWithPointer(OneWire, ROM);
+    OneWire_SelectWithPointer(OneWireStruct, ROM);
     /* Copy scratchpad to EEPROM of DS18B20 */
-    OneWire_WriteByte(OneWire, ONEWIRE_CMD_CPYSCRATCHPAD);
+    OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_CPYSCRATCHPAD);
     
     return 1;
 }
 
-uint8_t DS18B20_SetAlarmHighTemperature(OneWire_t* OneWire, uint8_t *ROM, int8_t temp) {
+uint8_t DS18B20_SetAlarmHighTemperature(OneWire_t* OneWireStruct, uint8_t *ROM, int8_t temp) {
     uint8_t tl, th, conf;
     if (!DS18B20_Is(ROM)) {
         return 0;
     }
-    if (temp > 125) {
-        temp = 125;
+    if (temp > DS18B20_MAX_TEMP_DEG_C) {
+        temp = DS18B20_MAX_TEMP_DEG_C;
     } 
-    if (temp < -55) {
-        temp = -55;
+    if (temp < DS18B20_MIN_TEMP_DEG_C) {
+        temp = DS18B20_MIN_TEMP_DEG_C;
     }
     /* Reset line */
-    OneWire_Reset(OneWire);
+    OneWire_Reset(OneWireStruct);
     /* Select ROM number */
-    OneWire_SelectWithPointer(OneWire, ROM);
-    /* Read scratchpad command by onewire protocol */
-    OneWire_WriteByte(OneWire, ONEWIRE_CMD_RSCRATCHPAD);
+    OneWire_SelectWithPointer(OneWireStruct, ROM);
+    /* Read scratchpad command by OneWireStruct protocol */
+    OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_RSCRATCHPAD);
     
     /* Ignore first 2 bytes */
-    OneWire_ReadByte(OneWire);
-    OneWire_ReadByte(OneWire);
+    OneWire_ReadByte(OneWireStruct);
+    OneWire_ReadByte(OneWireStruct);
     
-    th = OneWire_ReadByte(OneWire);
-    tl = OneWire_ReadByte(OneWire);
-    conf = OneWire_ReadByte(OneWire);
+    th = OneWire_ReadByte(OneWireStruct);
+    tl = OneWire_ReadByte(OneWireStruct);
+    conf = OneWire_ReadByte(OneWireStruct);
     
     th = (uint8_t)temp; 
 
     /* Reset line */
-    OneWire_Reset(OneWire);
+    OneWire_Reset(OneWireStruct);
     /* Select ROM number */
-    OneWire_SelectWithPointer(OneWire, ROM);
-    /* Write scratchpad command by onewire protocol, only th, tl and conf register can be written */
-    OneWire_WriteByte(OneWire, ONEWIRE_CMD_WSCRATCHPAD);
+    OneWire_SelectWithPointer(OneWireStruct, ROM);
+    /* Write scratchpad command by OneWireStruct protocol, only th, tl and conf register can be written */
+    OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_WSCRATCHPAD);
     
     /* Write bytes */
-    OneWire_WriteByte(OneWire, th);
-    OneWire_WriteByte(OneWire, tl);
-    OneWire_WriteByte(OneWire, conf);
+    OneWire_WriteByte(OneWireStruct, th);
+    OneWire_WriteByte(OneWireStruct, tl);
+    OneWire_WriteByte(OneWireStruct, conf);
     
     /* Reset line */
-    OneWire_Reset(OneWire);
+    OneWire_Reset(OneWireStruct);
     /* Select ROM number */
-    OneWire_SelectWithPointer(OneWire, ROM);
+    OneWire_SelectWithPointer(OneWireStruct, ROM);
     /* Copy scratchpad to EEPROM of DS18B20 */
-    OneWire_WriteByte(OneWire, ONEWIRE_CMD_CPYSCRATCHPAD);
+    OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_CPYSCRATCHPAD);
     
     return 1;
 }
 
-uint8_t DS18B20_DisableAlarmTemperature(OneWire_t* OneWire, uint8_t *ROM) {
+uint8_t DS18B20_DisableAlarmTemperature(OneWire_t* OneWireStruct, uint8_t *ROM) {
     uint8_t tl, th, conf;
     if (!DS18B20_Is(ROM)) {
         return 0;
     }
     /* Reset line */
-    OneWire_Reset(OneWire);
+    OneWire_Reset(OneWireStruct);
     /* Select ROM number */
-    OneWire_SelectWithPointer(OneWire, ROM);
-    /* Read scratchpad command by onewire protocol */
-    OneWire_WriteByte(OneWire, ONEWIRE_CMD_RSCRATCHPAD);
+    OneWire_SelectWithPointer(OneWireStruct, ROM);
+    /* Read scratchpad command by OneWireStruct protocol */
+    OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_RSCRATCHPAD);
     
     /* Ignore first 2 bytes */
-    OneWire_ReadByte(OneWire);
-    OneWire_ReadByte(OneWire);
+    OneWire_ReadByte(OneWireStruct);
+    OneWire_ReadByte(OneWireStruct);
     
-    th = OneWire_ReadByte(OneWire);
-    tl = OneWire_ReadByte(OneWire);
-    conf = OneWire_ReadByte(OneWire);
+    th = OneWire_ReadByte(OneWireStruct);
+    tl = OneWire_ReadByte(OneWireStruct);
+    conf = OneWire_ReadByte(OneWireStruct);
     
-    th = 125;
-    tl = (uint8_t)-55;
+    th = DS18B20_MAX_TEMP_DEG_C;
+    tl = DS18B20_MIN_TEMP_DEG_C;
 
     /* Reset line */
-    OneWire_Reset(OneWire);
+    OneWire_Reset(OneWireStruct);
     /* Select ROM number */
-    OneWire_SelectWithPointer(OneWire, ROM);
-    /* Write scratchpad command by onewire protocol, only th, tl and conf register can be written */
-    OneWire_WriteByte(OneWire, ONEWIRE_CMD_WSCRATCHPAD);
+    OneWire_SelectWithPointer(OneWireStruct, ROM);
+    /* Write scratchpad command by OneWireStruct protocol, only th, tl and conf register can be written */
+    OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_WSCRATCHPAD);
     
     /* Write bytes */
-    OneWire_WriteByte(OneWire, th);
-    OneWire_WriteByte(OneWire, tl);
-    OneWire_WriteByte(OneWire, conf);
+    OneWire_WriteByte(OneWireStruct, th);
+    OneWire_WriteByte(OneWireStruct, tl);
+    OneWire_WriteByte(OneWireStruct, conf);
     
     /* Reset line */
-    OneWire_Reset(OneWire);
+    OneWire_Reset(OneWireStruct);
     /* Select ROM number */
-    OneWire_SelectWithPointer(OneWire, ROM);
+    OneWire_SelectWithPointer(OneWireStruct, ROM);
     /* Copy scratchpad to EEPROM of DS18B20 */
-    OneWire_WriteByte(OneWire, ONEWIRE_CMD_CPYSCRATCHPAD);
+    OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_CPYSCRATCHPAD);
     
     return 1;
 }
 
-uint8_t DS18B20_AlarmSearch(OneWire_t* OneWire) {
+uint8_t DS18B20_AlarmSearch(OneWire_t* OneWireStruct) {
     /* Start alarm search */
-    return OneWire_Search(OneWire, DS18B20_CMD_ALARMSEARCH);
+    return OneWire_Search(OneWireStruct, DS18B20_CMD_ALARMSEARCH);
 }
 
-uint8_t DS18B20_AllDone(OneWire_t* OneWire) {
+uint8_t DS18B20_AllDone(OneWire_t* OneWireStruct) {
     /* If read bit is low, then device is not finished yet with calculation temperature */
-    return OneWire_ReadBit(OneWire) == 1;
+    return OneWire_ReadBit(OneWireStruct) == 1;
 }
 
 

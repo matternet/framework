@@ -49,7 +49,7 @@
  *
  * With this you can read temperature, set and get temperature resolution from 9 to 12 bits and check if device is DS18B20.
  * 
- * Pin for STM32Fxxx is the same as set with @ref ONEWIRE library.
+ * Pin for STM32Fxxx is the same as set with @ref OneWireStruct library.
  *
  * \par Changelog
  *
@@ -62,7 +62,7 @@
  *
 \verbatim
  - STM32Fxxx HAL
- - TM ONEWIRE
+ - TM OneWireStruct
  - TM GPIO
  - defines.h
 \endverbatim
@@ -70,9 +70,9 @@
 
 #include <modules/onewire/onewire.h>
 
-/* OneWire version check */
+/* OneWireStruct version check */
 // #if ONEWIRE_H < 100
-// #error "Please update TM ONEWIRE LIB, minimum required version is 2.0.0. Download available on stm32f4-discovery.net website"
+// #error "Please update TM OneWireStruct LIB, minimum required version is 2.0.0. Download available on stm32f4-discovery.net website"
 // #endif
 
 /**
@@ -83,7 +83,7 @@
 
 /* More details: https://datasheets.maximintegrated.com/en/ds/DS18B20.pdf */
 
-/* Every onewire chip has different ROM code, but all the same chips has same family code */
+/* Every OneWireStruct chip has different ROM code, but all the same chips has same family code */
 /* in case of DS18B20 this is 0x28 and this is first byte of ROM address */
 #define DS18B20_FAMILY_CODE				0x28
 
@@ -113,6 +113,9 @@
 #else
 #define DS18B20_DATA_LEN				2
 #endif
+
+#define DS18B20_MAX_TEMP_DEG_C 125
+#define DS18B20_MIN_TEMP_DEG_C -55
 
 /**
  * @}
@@ -145,8 +148,8 @@ typedef enum {
  */
 
 /**
- * @brief  Starts temperature conversion for specific DS18B20 on specific onewire channel
- * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWire channel)
+ * @brief  Starts temperature conversion for specific DS18B20 on specific OneWireStruct channel
+ * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWireStruct channel)
  * @param  *ROM: Pointer to first byte of ROM address for desired DS12B80 device.
  *         Entire ROM address is 8-bytes long
  * @retval 1 if device is DS18B20 or 0 if not
@@ -154,28 +157,30 @@ typedef enum {
 uint8_t DS18B20_Start(OneWire_t* OneWireStruct, uint8_t* ROM);
 
 /**
- * @brief  Starts temperature conversion for all DS18B20 devices on specific onewire channel
+ * @brief  Starts temperature conversion for all DS18B20 devices on specific OneWireStruct channel
  * @note   This mode will skip ROM addressing
- * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWire channel)
+ * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWireStruct channel)
  * @retval None
  */
 void DS18B20_StartAll(OneWire_t* OneWireStruct);
 
 /**
  * @brief  Reads temperature from DS18B20
- * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWire channel)
+ * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWireStruct channel)
  * @param  *ROM: Pointer to first byte of ROM address for desired DS12B80 device.
  *         Entire ROM address is 8-bytes long
  * @param  *destination: Pointer to float variable to store temperature
  * @retval Temperature status:
- *            - 0: Device is not DS18B20 or conversion is not done yet or CRC failed
- *            - > 0: Temperature is read OK
+ *            - 1: Temperature Read is OK
+ *            - 2: Device is not DS18B20
+ *            - 3: Conversion not done
+ *            - 4: CRC invalid
  */
 uint8_t DS18B20_Read(OneWire_t* OneWireStruct, uint8_t* ROM, float* destination);
 
 /**
  * @brief  Gets resolution for temperature conversion from DS18B20 device
- * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWire channel)
+ * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWireStruct channel)
  * @param  *ROM: Pointer to first byte of ROM address for desired DS12B80 device.
  *         Entire ROM address is 8-bytes long
  * @retval Resolution:
@@ -186,7 +191,7 @@ uint8_t DS18B20_GetResolution(OneWire_t* OneWireStruct, uint8_t* ROM);
 
 /**
  * @brief  Sets resolution for specific DS18B20 device
- * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWire channel)
+ * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWireStruct channel)
  * @param  *ROM: Pointer to first byte of ROM address for desired DS12B80 device.
  *         Entire ROM address is 8-bytes long
  * @param  resolution: Resolution for DS18B20 device. This parameter can be a value of @ref DS18B20_Resolution_t enumeration.
@@ -208,7 +213,7 @@ uint8_t DS18B20_Is(uint8_t* ROM);
 
 /**
  * @brief  Sets high alarm temperature to specific DS18B20 sensor
- * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWire channel)
+ * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWireStruct channel)
  * @param  *ROM: Pointer to first byte of ROM address for desired DS12B80 device.
  *         Entire ROM address is 8-bytes long
  * @param  temp: integer value for temperature between -55 to 125 degrees
@@ -220,7 +225,7 @@ uint8_t DS18B20_SetAlarmHighTemperature(OneWire_t* OneWireStruct, uint8_t* ROM, 
 
 /**
  * @brief  Sets low alarm temperature to specific DS18B20 sensor
- * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWire channel)
+ * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWireStruct channel)
  * @param  *ROM: Pointer to first byte of ROM address for desired DS12B80 device.
  *         Entire ROM address is 8-bytes long
  * @param  temp: integer value for temperature between -55 to 125 degrees
@@ -232,7 +237,7 @@ uint8_t DS18B20_SetAlarmLowTemperature(OneWire_t* OneWireStruct, uint8_t* ROM, i
 
 /**
  * @brief  Disables alarm temperature for specific DS18B20 sensor
- * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWire channel)
+ * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWireStruct channel)
  * @param  *ROM: Pointer to first byte of ROM address for desired DS12B80 device.
  *         Entire ROM address is 8-bytes long
  * @retval Success status:
@@ -243,11 +248,11 @@ uint8_t DS18B20_DisableAlarmTemperature(OneWire_t* OneWireStruct, uint8_t* ROM);
 
 /**
  * @brief  Searches for devices with alarm flag set
- * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWire channel)
+ * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWireStruct channel)
  * @retval Alarm search status
  *            - 0: No device found with alarm flag set
  *            - > 0: Device is found with alarm flag
- * @note   To get all devices on one onewire channel with alarm flag set, you can do this:
+ * @note   To get all devices on one OneWireStruct channel with alarm flag set, you can do this:
 \verbatim
 while (DS18B20_AlarmSearch(&OneWireStruct)) {
 	//Read device ID here 
@@ -260,7 +265,7 @@ uint8_t DS18B20_AlarmSearch(OneWire_t* OneWireStruct);
 
 /**
  * @brief  Checks if all DS18B20 sensors are done with temperature conversion
- * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWire channel)
+ * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWireStruct channel)
  * @retval Conversion status
  *            - 0: Not all devices are done
  *            - > 0: All devices are done with conversion
