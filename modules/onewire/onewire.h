@@ -125,14 +125,14 @@ uint8_t OneWire_Init(OneWire_t* OneWireStruct, uint32_t PalLine);
  *         -  0: Presence Pulse OK
  *         -  1: Presence Pulse ERROR
  */
-uint8_t OneWire_Reset(OneWire_t* OneWireStruct);
+char OneWire_Reset(OneWire_t* OneWireStruct);
 
 /**
  * @brief  Reads byte from one wire bus
  * @param  *OneWireStruct: Pointer to @ref OneWire_t working onewire structure
  * @retval Byte from read operation or -1 for usage error
  */
-uint8_t OneWire_ReadByte(OneWire_t* OneWireStruct);
+char OneWire_ReadByte(OneWire_t* OneWireStruct);
 
 /**
  * @brief  Writes byte to bus
@@ -158,17 +158,18 @@ uint8_t OneWire_WriteBit(OneWire_t* OneWireStruct, uint8_t bit);
  *            -    0: Bit is low (zero)
  *            -  > 0: Bit is high (one)
  */
-uint8_t OneWire_ReadBit(OneWire_t* OneWireStruct);
+char OneWire_ReadBit(OneWire_t* OneWireStruct);
 
 /**
  * @brief  Searches for OneWire devices on specific Onewire port
  * @note   Not meant for public use. Use @ref OneWire_First and @ref OneWire_Next for this.
  * @param  *OneWireStruct: Pointer to @ref OneWire_t working onewire structure where to search
  * @param  Device status:
+ *            -  -1: Usage Error
  *            -   0: No devices detected
  *            - > 0: Device detected
  */
-uint8_t OneWire_Search(OneWire_t* OneWireStruct, uint8_t command);
+char OneWire_Search(OneWire_t* OneWireStruct, uint8_t command);
 
 /**
  * @brief  Resets search states
@@ -196,7 +197,7 @@ while (status) {
  *            -   0: No devices detected
  *            - > 0: Device detected
  */
-uint8_t OneWire_First(OneWire_t* OneWireStruct);
+char OneWire_First(OneWire_t* OneWireStruct);
 
 /**
  * @brief  Reads next device
@@ -207,7 +208,7 @@ uint8_t OneWire_First(OneWire_t* OneWireStruct);
  *            -   0: No devices detected any more
  *            - > 0: New device detected
  */
-uint8_t OneWire_Next(OneWire_t* OneWireStruct);
+char OneWire_Next(OneWire_t* OneWireStruct);
 
 /**
  * @brief  Gets ROM number from device from search
@@ -215,7 +216,7 @@ uint8_t OneWire_Next(OneWire_t* OneWireStruct);
  * @param  index: Because each device has 8-bytes long ROm address, you have to call this 8 times, to get ROM bytes from 0 to 7
  * @reetval ROM byte for index (0 to 7) at current found device, -1 for Usage Error
  */
-uint8_t OneWire_GetROM(OneWire_t* OneWireStruct, uint8_t index);
+char OneWire_GetROM(OneWire_t* OneWireStruct, uint8_t index);
 
 /**
  * @brief  Gets all 8 bytes ROM value from device from search
@@ -248,7 +249,7 @@ uint8_t OneWire_SelectWithPointer(OneWire_t* OneWireStruct, uint8_t* ROM);
  *
  * @retval Calculated CRC from input data, -1 for Usage Error
  */
-uint8_t OneWire_CRC8(uint8_t* addr, uint8_t len);
+char OneWire_CRC8(uint8_t* addr, uint8_t len);
 //#######################################################################################################
 
 /* C++ detection */

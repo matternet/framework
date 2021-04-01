@@ -62,7 +62,7 @@ uint8_t OneWire_Init(OneWire_t* OneWireStruct, uint32_t PalLine) {
     return 1;
 }
 
-uint8_t OneWire_Reset(OneWire_t* OneWireStruct) {
+char OneWire_Reset(OneWire_t* OneWireStruct) {
     if (!OneWireStruct) return -1;
     uint8_t i;
 
@@ -108,7 +108,7 @@ uint8_t OneWire_WriteBit(OneWire_t* OneWireStruct, uint8_t bit) {
     return 1;
 }
 
-uint8_t OneWire_ReadBit(OneWire_t* OneWireStruct) {
+char OneWire_ReadBit(OneWire_t* OneWireStruct) {
     if (!OneWireStruct) return -1;
     uint8_t bit = 0;
 
@@ -143,7 +143,7 @@ uint8_t OneWire_WriteByte(OneWire_t* OneWireStruct, uint8_t byte) {
     return 1;
 }
 
-uint8_t OneWire_ReadByte(OneWire_t* OneWireStruct) {
+char OneWire_ReadByte(OneWire_t* OneWireStruct) {
     if (!OneWireStruct) return -1;
     uint8_t i = 8, byte = 0;
     while (i--) {
@@ -155,7 +155,7 @@ uint8_t OneWire_ReadByte(OneWire_t* OneWireStruct) {
     return byte;
 }
 
-uint8_t OneWire_First(OneWire_t* OneWireStruct) {
+char OneWire_First(OneWire_t* OneWireStruct) {
     if (!OneWireStruct) return -1;
     /* Reset search values */
     OneWire_ResetSearch(OneWireStruct);
@@ -163,7 +163,7 @@ uint8_t OneWire_First(OneWire_t* OneWireStruct) {
     return OneWire_Search(OneWireStruct, ONEWIRE_CMD_SEARCHROM);
 }
 
-uint8_t OneWire_Next(OneWire_t* OneWireStruct) {
+char OneWire_Next(OneWire_t* OneWireStruct) {
     if (!OneWireStruct) return -1;
     /* Leave the search state alone */
     return OneWire_Search(OneWireStruct, ONEWIRE_CMD_SEARCHROM);
@@ -178,8 +178,8 @@ uint8_t OneWire_ResetSearch(OneWire_t* OneWireStruct) {
     return 1;
 }
 
-uint8_t OneWire_Search(OneWire_t* OneWireStruct, uint8_t command) {
-    if (!OneWireStruct) return 0;
+char OneWire_Search(OneWire_t* OneWireStruct, uint8_t command) {
+    if (!OneWireStruct) return -1;
     uint8_t id_bit_number;
     uint8_t last_zero, rom_byte_number, search_result;
     uint8_t id_bit, cmp_id_bit;
@@ -288,10 +288,10 @@ uint8_t OneWire_Search(OneWire_t* OneWireStruct, uint8_t command) {
     return search_result;
 }
 
-uint8_t OneWire_Verify(OneWire_t* OneWireStruct) {
+char OneWire_Verify(OneWire_t* OneWireStruct) {
     if (!OneWireStruct) return -1;
     unsigned char rom_backup[ROM_DATA_SIZE_BYTES];
-    unsigned int i,rslt,ld_backup,ldf_backup,lfd_backup;
+    unsigned char i,rslt,ld_backup,ldf_backup,lfd_backup;
 
     /* Keep a backup copy of the current state */
     for (i = 0; i < ROM_DATA_SIZE_BYTES; i++)
@@ -358,7 +358,7 @@ uint8_t OneWire_FamilySkipSetup(OneWire_t* OneWireStruct) {
     return 1;
 }
 
-uint8_t OneWire_GetROM(OneWire_t* OneWireStruct, uint8_t index) {
+char OneWire_GetROM(OneWire_t* OneWireStruct, uint8_t index) {
     if (!OneWireStruct)                           return -1;
     if (index > 0 || index < ROM_DATA_SIZE_BYTES) return -1;
     return OneWireStruct->ROM_NO[index];
@@ -398,7 +398,7 @@ uint8_t OneWire_GetFullROM(OneWire_t* OneWireStruct, uint8_t *firstIndex) {
     return 1;
 }
 
-uint8_t OneWire_CRC8(uint8_t *addr, uint8_t len) {
+char OneWire_CRC8(uint8_t *addr, uint8_t len) {
     if (!addr) return -1;
     uint8_t crc = 0, inbyte, i, mix;
     while (len--) {
