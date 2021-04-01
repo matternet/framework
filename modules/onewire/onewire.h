@@ -44,15 +44,23 @@ extern "C" {
 #define ONEWIRE_CMD_SKIPROM				0xCC
 
 /* OneWire Constants */
+#define ROM_DATA_SIZE_BYTES 8
+
+/* Delay timing for onewire protocol */
+/* NOTE(vwnguyen): if any of these times are used to toggle between output -> input, add 4-5 us for the toggle time*/
+
 #define ONEWIRE_TX_MIN_RESET_PULSE_TIME_USEC  480 // min time required to pull line low for reset pulse
 #define ONEWIRE_WAIT_PRESENCE_PULSE_TIME_USEC 70  // time given to other onewire device before we poll for presence pulse 
 #define ONEWIRE_RX_MIN_RESET_PULSE_TIME_USEC  480 - ONEWIRE_WAIT_PRESENCE_PULSE_TIME_USEC // fill out remaining time needed for reset
 
-#define ONEWIRE_TX_WRITE_0_SLOT_USEC 65
-#define ONEWIRE_TX_WRITE_1_SLOT_USEC 5
-#define ONEWIRE_TX_RECOVER_TIME_USEC 5
+#define ONEWIRE_TX_WRITE_0_BIT_LO_TIME_USEC 65   // 60 < time < 120 us
+#define ONEWIRE_TX_WRITE_1_BIT_LO_TIME_USEC 10   // time < 15us, helps to be closer to 15us
+#define ONEWIRE_TX_WRITE_1_BIT_HI_TIME_USEC 60 - ONEWIRE_TX_WRITE_1_BIT_LO_TIME_USEC // fill out remainder of write 1 slot time
+#define ONEWIRE_TX_RECOVER_TIME_USEC          5  // any value > 1us
 #define ONEWIRE_WAIT_SLAVE_READ_BIT_TIME_USEC 55               
 
+#define ONEWIRE_RX_READ_BIT_LO_TIME_USEC 3 
+#define ONEWIRE_RX_READ_BIT_WAIT_BEFORE_SAMPLE_TIME_USEC 5
 
 //#######################################################################################################
 
@@ -71,11 +79,11 @@ extern "C" {
  * @note   Except ROM_NO member, everything is fully private and should not be touched by user
  */
 typedef struct {
-	uint32_t PalLine;               /*!< GPIOx port to be used for I/O functions */
-	uint8_t  LastDiscrepancy;       /*!< Search private */
-	uint8_t  LastFamilyDiscrepancy; /*!< Search private */
-	uint8_t  LastDeviceFlag;        /*!< Search private */
-	uint8_t  ROM_NO[8];             /*!< 8-bytes address of last search device */
+	uint32_t PalLine;               		/*!< GPIOx port to be used for I/O functions */
+	uint8_t  LastDiscrepancy;       		/*!< Search private */
+	uint8_t  LastFamilyDiscrepancy; 		/*!< Search private */
+	uint8_t  LastDeviceFlag;        		/*!< Search private */
+	uint8_t  ROM_NO[ROM_DATA_SIZE_BYTES];   /*!< 8-bytes address of last search device */
 } OneWire_t;
 
 

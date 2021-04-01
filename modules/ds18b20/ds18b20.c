@@ -61,13 +61,13 @@ uint8_t DS18B20_Read(OneWire_t* OneWire, uint8_t *ROM, float *destination) {
 	
 	/* Check if device is DS18B20 */
 	if (!DS18B20_Is(ROM)) {
-		return 0;
+		return 2;
 	}
 	
 	/* Check if line is released, if it is, then conversion is complete */
 	if (!OneWire_ReadBit(OneWire)) {
 		/* Conversion is not finished yet */
-		return 0; 
+		return 3; 
 	}
 
 	/* Reset line */
@@ -89,7 +89,7 @@ uint8_t DS18B20_Read(OneWire_t* OneWire, uint8_t *ROM, float *destination) {
 	/* Check if CRC is ok */
 	if (crc != data[DS18B20_READ_CRC_BYTE]) {
 		/* CRC invalid */
-		return 0;
+		return 4;
 	}
 	
 	/* First two bytes of scratchpad are temperature values */
@@ -394,7 +394,7 @@ uint8_t DS18B20_AlarmSearch(OneWire_t* OneWire) {
 
 uint8_t DS18B20_AllDone(OneWire_t* OneWire) {
 	/* If read bit is low, then device is not finished yet with calculation temperature */
-	return OneWire_ReadBit(OneWire);
+	return OneWire_ReadBit(OneWire) == 1;
 }
 
 

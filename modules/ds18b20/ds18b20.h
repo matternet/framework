@@ -103,7 +103,7 @@
 
 /* DS18B20 Common Numbers */
 #define DS18B20_READ_DATA_SIZE          9
-#define DS18B20_READ_CRC_BYTE           9
+#define DS18B20_READ_CRC_BYTE           8
 #define DS18B20_DATA_LSB                0
 #define DS18B20_DATA_MSB                1
 
