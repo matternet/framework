@@ -35,7 +35,7 @@
 \endverbatim
  */
 #ifndef DS18B20_H
-#define DS18B20_H 100
+#define DS18B20_H
 
 /**
  * @addtogroup STM32Fxxx_HAL_Libraries

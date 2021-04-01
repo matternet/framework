@@ -18,37 +18,44 @@
  */
 
 #include "onewire.h"
+#include <assert.h>
 
 // ONEWIRE ABSTRACTION HELPERS
 
 // NOTE(vwnguyen): Blocking sleep function. Seems to be OK for our application.
 // NOTE(vwnguyen): Seems to be more accurate than using ChThdSleepMicroseconds()
 void ONEWIRE_DELAY(uint32_t time_us) {
+    assert(time_us >= 0);
     usleep(time_us);
 }
 
-void ONEWIRE_LOW(OneWire_t *gp) {
-    palClearLine(gp->PalLine);
+void ONEWIRE_LOW(OneWire_t *OneWireStruct ){
+    assert(OneWireStruct != NULL);
+    palClearLine(OneWireStruct->PalLine);
 }
 
-void ONEWIRE_HIGH(OneWire_t *gp) {
-    palSetLine(gp->PalLine); 
+void ONEWIRE_HIGH(OneWire_t *OneWireStruct) {
+    assert(OneWireStruct != NULL);
+    palSetLine(OneWireStruct->PalLine); 
 }
 
 // NOTE(vwnguyen): Min time taken to toggle between OUTPUT -> INPUT ~= 4-5us
 // NOTE(vwnguyen): using ONEWIRE_DELAY on top of this toggle time should result
 // NOTE(vwnguyen): in total_delay = toggle_time + delay_time
-void ONEWIRE_INPUT(OneWire_t *gp) {
-    palSetLineMode(gp->PalLine, PAL_MODE_INPUT | PAL_STM32_OSPEED_HIGHEST);
+void ONEWIRE_INPUT(OneWire_t *OneWireStruct) {
+    assert(OneWireStruct != NULL);
+    palSetLineMode(OneWireStruct->PalLine, PAL_MODE_INPUT | PAL_STM32_OSPEED_HIGHEST);
 }
 
-void ONEWIRE_OUTPUT(OneWire_t *gp) {
-    palSetLineMode(gp->PalLine, PAL_STM32_MODE_OUTPUT | PAL_STM32_OSPEED_HIGHEST);
+void ONEWIRE_OUTPUT(OneWire_t *OneWireStruct) {
+    assert(OneWireStruct != NULL);
+    palSetLineMode(OneWireStruct->PalLine, PAL_STM32_MODE_OUTPUT | PAL_STM32_OSPEED_HIGHEST);
 }
 
 // ONEWIRE IMPLEMENTATION
 
 void OneWire_Init(OneWire_t* OneWireStruct, uint32_t PalLine) {
+    assert(OneWireStruct != NULL);
     OneWireStruct->PalLine = PalLine;
     ONEWIRE_OUTPUT(OneWireStruct);
     ONEWIRE_HIGH(OneWireStruct);
@@ -60,6 +67,7 @@ void OneWire_Init(OneWire_t* OneWireStruct, uint32_t PalLine) {
 }
 
 uint8_t OneWire_Reset(OneWire_t* OneWireStruct) {
+    assert(OneWireStruct != NULL);
     uint8_t i;
 
     /* Line low, and wait */
@@ -81,6 +89,7 @@ uint8_t OneWire_Reset(OneWire_t* OneWireStruct) {
 }
 
 void OneWire_WriteBit(OneWire_t* OneWireStruct, uint8_t bit) {
+    assert(OneWireStruct != NULL);
     if (bit) {
         /* Set line low */
         ONEWIRE_OUTPUT(OneWireStruct);
@@ -104,6 +113,7 @@ void OneWire_WriteBit(OneWire_t* OneWireStruct, uint8_t bit) {
 }
 
 uint8_t OneWire_ReadBit(OneWire_t* OneWireStruct) {
+    assert(OneWireStruct != NULL);
     uint8_t bit = 0;
 
     /* Line low */
@@ -129,6 +139,7 @@ uint8_t OneWire_ReadBit(OneWire_t* OneWireStruct) {
 }
 
 void OneWire_WriteByte(OneWire_t* OneWireStruct, uint8_t byte) {
+    assert(OneWireStruct != NULL);
     uint8_t i = 8;
     /* Write 8 bits */
     while (i--) {
@@ -139,36 +150,41 @@ void OneWire_WriteByte(OneWire_t* OneWireStruct, uint8_t byte) {
 }
 
 uint8_t OneWire_ReadByte(OneWire_t* OneWireStruct) {
- uint8_t i = 8, byte = 0;
- while (i--) {
-     byte >>= 1;
-     byte |= (OneWire_ReadBit(OneWireStruct) << 7);
- }
+    assert(OneWireStruct != NULL);
+    uint8_t i = 8, byte = 0;
+    while (i--) {
+        /* data is transferred LSB first, shift summed byte first by 1,
+        then shift data byte by 7 to put in appropriate power */
+        byte >>= 1;
+        byte |= (OneWire_ReadBit(OneWireStruct) << 7);
+    }
 
- return byte;
+    return byte;
 }
 
 uint8_t OneWire_First(OneWire_t* OneWireStruct) {
- /* Reset search values */
- OneWire_ResetSearch(OneWireStruct);
-
- /* Start with searching */
- return OneWire_Search(OneWireStruct, ONEWIRE_CMD_SEARCHROM);
+    assert(OneWireStruct != NULL);
+    /* Reset search values */
+    OneWire_ResetSearch(OneWireStruct);
+    /* Start with searching */
+    return OneWire_Search(OneWireStruct, ONEWIRE_CMD_SEARCHROM);
 }
 
 uint8_t OneWire_Next(OneWire_t* OneWireStruct) {
-   /* Leave the search state alone */
-   return OneWire_Search(OneWireStruct, ONEWIRE_CMD_SEARCHROM);
+    assert(OneWireStruct != NULL);
+    /* Leave the search state alone */
+    return OneWire_Search(OneWireStruct, ONEWIRE_CMD_SEARCHROM);
 }
 
 void OneWire_ResetSearch(OneWire_t* OneWireStruct) {
- /* Reset the search state */
- OneWireStruct->LastDiscrepancy = 0;
- OneWireStruct->LastDeviceFlag = 0;
- OneWireStruct->LastFamilyDiscrepancy = 0;
+    /* Reset the search state */
+    OneWireStruct->LastDiscrepancy = 0;
+    OneWireStruct->LastDeviceFlag = 0;
+    OneWireStruct->LastFamilyDiscrepancy = 0;
 }
 
 uint8_t OneWire_Search(OneWire_t* OneWireStruct, uint8_t command) {
+    assert(OneWireStruct != NULL);
     uint8_t id_bit_number;
     uint8_t last_zero, rom_byte_number, search_result;
     uint8_t id_bit, cmp_id_bit;
@@ -278,6 +294,7 @@ uint8_t OneWire_Search(OneWire_t* OneWireStruct, uint8_t command) {
 }
 
 int OneWire_Verify(OneWire_t* OneWireStruct) {
+    assert(OneWireStruct != NULL);
     unsigned char rom_backup[ROM_DATA_SIZE_BYTES];
     int i,rslt,ld_backup,ldf_backup,lfd_backup;
 
@@ -289,7 +306,7 @@ int OneWire_Verify(OneWire_t* OneWireStruct) {
     lfd_backup = OneWireStruct->LastFamilyDiscrepancy;
 
     /* Set search to find the same device */
-    OneWireStruct->LastDiscrepancy = 64;
+    OneWireStruct->LastDiscrepancy = ROM_DATA_SIZE_BITS;
     OneWireStruct->LastDeviceFlag = 0;
 
     if (OneWire_Search(OneWireStruct, ONEWIRE_CMD_SEARCHROM)) {
@@ -318,20 +335,22 @@ int OneWire_Verify(OneWire_t* OneWireStruct) {
 }
 
 void OneWire_TargetSetup(OneWire_t* OneWireStruct, uint8_t family_code) {
-   uint8_t i;
+    assert(OneWireStruct != NULL);
+    uint8_t i;
 
     /* Set the search state to find SearchFamily type devices */
     OneWireStruct->ROM_NO[0] = family_code;
     for (i = 1; i < ROM_DATA_SIZE_BYTES; i++) {
         OneWireStruct->ROM_NO[i] = 0;
     }
-    
-    OneWireStruct->LastDiscrepancy = 64;
+
+    OneWireStruct->LastDiscrepancy = ROM_DATA_SIZE_BITS;
     OneWireStruct->LastFamilyDiscrepancy = 0;
     OneWireStruct->LastDeviceFlag = 0;
 }
 
 void OneWire_FamilySkipSetup(OneWire_t* OneWireStruct) {
+    assert(OneWireStruct != NULL);
     /* Set the Last discrepancy to last family discrepancy */
     OneWireStruct->LastDiscrepancy = OneWireStruct->LastFamilyDiscrepancy;
     OneWireStruct->LastFamilyDiscrepancy = 0;
@@ -343,10 +362,15 @@ void OneWire_FamilySkipSetup(OneWire_t* OneWireStruct) {
 }
 
 uint8_t OneWire_GetROM(OneWire_t* OneWireStruct, uint8_t index) {
+    assert(OneWireStruct != NULL);
+    assert(index >= 0 && index < ROM_DATA_SIZE_BYTES);
+    assert(index < ROM_DATA_SIZE_BYTES);
     return OneWireStruct->ROM_NO[index];
 }
 
 void OneWire_Select(OneWire_t* OneWireStruct, uint8_t* addr) {
+    assert(OneWireStruct != NULL);
+    assert(addr != NULL);
     uint8_t i;
     OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_MATCHROM);
     
@@ -356,6 +380,8 @@ void OneWire_Select(OneWire_t* OneWireStruct, uint8_t* addr) {
 }
 
 void OneWire_SelectWithPointer(OneWire_t* OneWireStruct, uint8_t *ROM) {
+    assert(OneWireStruct != NULL);
+    assert(ROM != NULL);
     uint8_t i;
     OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_MATCHROM);
     
@@ -365,6 +391,8 @@ void OneWire_SelectWithPointer(OneWire_t* OneWireStruct, uint8_t *ROM) {
 }
 
 void OneWire_GetFullROM(OneWire_t* OneWireStruct, uint8_t *firstIndex) {
+    assert(OneWireStruct != NULL);
+    assert(firstIndex != NULL);
     uint8_t i;
     for (i = 0; i < ROM_DATA_SIZE_BYTES; i++) {
         *(firstIndex + i) = OneWireStruct->ROM_NO[i];
@@ -372,6 +400,7 @@ void OneWire_GetFullROM(OneWire_t* OneWireStruct, uint8_t *firstIndex) {
 }
 
 uint8_t OneWire_CRC8(uint8_t *addr, uint8_t len) {
+    assert(OneWireStruct != NULL);
     uint8_t crc = 0, inbyte, i, mix;
     
     while (len--) {

@@ -20,7 +20,7 @@
 
 
 #ifndef ONEWIRE_H
-#define ONEWIRE_H 100
+#define ONEWIRE_H
 
 /* C++ detection */
 #ifdef __cplusplus
@@ -44,6 +44,7 @@ extern "C" {
 #define ONEWIRE_CMD_SKIPROM				0xCC
 
 /* OneWire Constants */
+#define ROM_DATA_SIZE_BITS  64
 #define ROM_DATA_SIZE_BYTES 8
 
 /* Delay timing for onewire protocol */
