@@ -120,6 +120,8 @@
 #define DS18B20_CONFIG_REGISTER_R0_R1_BITMASK 0x60
 #define DS18B20_CONFIG_REGISTER_RESERVED_BITS 5
 
+#define DS18B20_TEMP_SIGN_BITMASK             0x8000
+
 /* Return Codes*/
 #define DS18B20_USAGE_ERROR           -1
 #define DEVICE_NOT_DS18B20             0

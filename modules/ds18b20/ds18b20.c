@@ -102,7 +102,7 @@ char DS18B20_Read(OneWire_t* OneWireStruct, uint8_t *ROM, float *destination) {
     OneWire_Reset(OneWireStruct);
     
     /* Check if temperature is negative */
-    if (temperature & 0x8000) {
+    if (temperature & DS18B20_TEMP_SIGN_BITMASK) {
         /* Two's complement, temperature is negative */
         temperature = ~temperature + 1;
         minus = 1;
@@ -215,6 +215,17 @@ char DS18B20_SetResolution(OneWire_t* OneWireStruct, uint8_t *ROM, DS18B20_Resol
     trigger_register_lo = OneWire_ReadByte(OneWireStruct);
     conf_register = OneWire_ReadByte(OneWireStruct);
     
+    /*  
+    ------------------------------------------
+    Configuration Register Resolution Values
+    ------------------------------------------
+    R0  R1  RESOLUTION_BITS
+    0   0   9
+    0   1   10
+    1   0   11
+    1   1   12
+    ------------------------------------------
+    */
     if (resolution == DS18B20_Resolution_9bits) {
         conf_register &= ~(1 << DS18B20_RESOLUTION_R1);
         conf_register &= ~(1 << DS18B20_RESOLUTION_R0);
