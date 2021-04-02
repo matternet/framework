@@ -26,11 +26,9 @@
 #include "ds18b20.h"
 #include <assert.h>
 
-uint8_t DS18B20_Start(OneWire_t* OneWireStruct, uint8_t *ROM) {
-    /* Check if device is DS18B20 */
-    if (!DS18B20_Is(ROM)) {
-        return 0;
-    }
+char DS18B20_Start(OneWire_t* OneWireStruct, uint8_t *ROM) {
+    if (!OneWireStruct)   return DS18B20_USAGE_ERROR;
+    if (!DS18B20_Is(ROM)) return DEVICE_NOT_DS18B20;    
 
     /* Reset line */
     OneWire_Reset(OneWireStruct);
@@ -42,33 +40,38 @@ uint8_t DS18B20_Start(OneWire_t* OneWireStruct, uint8_t *ROM) {
     return 1;
 }
 
-void DS18B20_StartAll(OneWire_t* OneWireStruct) {
+char DS18B20_StartAll(OneWire_t* OneWireStruct) {
+    if (!OneWireStruct) return DS18B20_USAGE_ERROR;
     /* Reset pulse */
     OneWire_Reset(OneWireStruct);
     /* Skip rom */
     OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_SKIPROM);
     /* Start conversion on all connected devices */
     OneWire_WriteByte(OneWireStruct, DS18B20_CMD_CONVERTTEMP);
+    return 1;
 }
 
-uint8_t DS18B20_Read(OneWire_t* OneWireStruct, uint8_t *ROM, float *destination) {
+char DS18B20_Read(OneWire_t* OneWireStruct, uint8_t *ROM, float *destination) {
+    if (!OneWireStruct)   return DS18B20_USAGE_ERROR;
+    if (!ROM)             return DS18B20_USAGE_ERROR;
+    if (!destination)     return DS18B20_USAGE_ERROR;
+    if (!DS18B20_Is(ROM)) return DEVICE_NOT_DS18B20;
+
     uint16_t temperature;
-    uint8_t resolution;
+    unsigned char resolution;
     int8_t digit, minus = 0;
     float decimal;
-    uint8_t i = 0;
-    uint8_t data[DS18B20_READ_DATA_SIZE];
-    uint8_t crc;
+    unsigned char i = 0;
+    unsigned char data[DS18B20_READ_DATA_SIZE];
+    unsigned char crc;
     
     /* Check if device is DS18B20 */
-    if (!DS18B20_Is(ROM)) {
-        return 2;
-    }
+    
     
     /* Check if line is released, if it is, then conversion is complete */
     if (OneWire_ReadBit(OneWireStruct)==0) {
         /* Conversion is not finished yet */
-        return 3; 
+        return DS18B20_CONVERSION_IN_PROGRESS; 
     }
 
     /* Reset line */
@@ -152,12 +155,12 @@ uint8_t DS18B20_Read(OneWire_t* OneWireStruct, uint8_t *ROM, float *destination)
     return 1;
 }
 
-uint8_t DS18B20_GetResolution(OneWire_t* OneWireStruct, uint8_t *ROM) {
-    uint8_t conf;
-    if (!DS18B20_Is(ROM)) {
-        return 0;
-    }
+char DS18B20_GetResolution(OneWire_t* OneWireStruct, uint8_t *ROM) {
+    if (!OneWireStruct)   return DS18B20_USAGE_ERROR;
+    if (!ROM)             return DS18B20_USAGE_ERROR;
+    if (!DS18B20_Is(ROM)) return DEVICE_NOT_DS18B20;
     
+    char conf;
     /* Reset line */
     OneWire_Reset(OneWireStruct);
     /* Select ROM number */
@@ -178,12 +181,12 @@ uint8_t DS18B20_GetResolution(OneWire_t* OneWireStruct, uint8_t *ROM) {
     return ((conf & 0x60) >> 5) + 9;
 }
 
-uint8_t DS18B20_SetResolution(OneWire_t* OneWireStruct, uint8_t *ROM, DS18B20_Resolution_t resolution) {
-    uint8_t th, tl, conf;
-    if (!DS18B20_Is(ROM)) {
-        return 0;
-    }
-    
+char DS18B20_SetResolution(OneWire_t* OneWireStruct, uint8_t *ROM, DS18B20_Resolution_t resolution) {
+    if (!OneWireStruct)   return DS18B20_USAGE_ERROR;
+    if (!ROM)             return DS18B20_USAGE_ERROR;
+    if (!DS18B20_Is(ROM)) return DEVICE_NOT_DS18B20;
+
+    char th, tl, conf;
     /* Reset line */
     OneWire_Reset(OneWireStruct);
     /* Select ROM number */
@@ -235,19 +238,19 @@ uint8_t DS18B20_SetResolution(OneWire_t* OneWireStruct, uint8_t *ROM, DS18B20_Re
     return 1;
 }
 
-uint8_t DS18B20_Is(uint8_t *ROM) {
+char DS18B20_Is(uint8_t *ROM) {
+    if (!ROM) return DS18B20_USAGE_ERROR;
     /* Checks if first byte is equal to DS18B20's family code */
-    if (*ROM == DS18B20_FAMILY_CODE) {
-        return 1;
-    }
+    if (*ROM == DS18B20_FAMILY_CODE) return 1;
     return 0;
 }
 
-uint8_t DS18B20_SetAlarmLowTemperature(OneWire_t* OneWireStruct, uint8_t *ROM, int8_t temp) {
-    uint8_t tl, th, conf;
-    if (!DS18B20_Is(ROM)) {
-        return 0;
-    }
+char DS18B20_SetAlarmLowTemperature(OneWire_t* OneWireStruct, uint8_t *ROM, int8_t temp) {
+    if (!OneWireStruct)   return DS18B20_USAGE_ERROR;
+    if (!ROM)             return DS18B20_USAGE_ERROR;
+    if (!DS18B20_Is(ROM)) return DEVICE_NOT_DS18B20;
+
+    char tl, th, conf;
     if (temp > DS18B20_MAX_TEMP_DEG_C) {
         temp = DS18B20_MAX_TEMP_DEG_C;
     } 
@@ -269,7 +272,7 @@ uint8_t DS18B20_SetAlarmLowTemperature(OneWire_t* OneWireStruct, uint8_t *ROM, i
     tl = OneWire_ReadByte(OneWireStruct);
     conf = OneWire_ReadByte(OneWireStruct);
     
-    tl = (uint8_t)temp; 
+    tl = (char)temp; 
 
     /* Reset line */
     OneWire_Reset(OneWireStruct);
@@ -293,11 +296,13 @@ uint8_t DS18B20_SetAlarmLowTemperature(OneWire_t* OneWireStruct, uint8_t *ROM, i
     return 1;
 }
 
-uint8_t DS18B20_SetAlarmHighTemperature(OneWire_t* OneWireStruct, uint8_t *ROM, int8_t temp) {
-    uint8_t tl, th, conf;
-    if (!DS18B20_Is(ROM)) {
-        return 0;
-    }
+char DS18B20_SetAlarmHighTemperature(OneWire_t* OneWireStruct, uint8_t *ROM, int8_t temp) {
+    if (!OneWireStruct)   return DS18B20_USAGE_ERROR;
+    if (!ROM)             return DS18B20_USAGE_ERROR;
+    if (!DS18B20_Is(ROM)) return DEVICE_NOT_DS18B20;
+
+    char tl, th, conf;
+
     if (temp > DS18B20_MAX_TEMP_DEG_C) {
         temp = DS18B20_MAX_TEMP_DEG_C;
     } 
@@ -319,7 +324,7 @@ uint8_t DS18B20_SetAlarmHighTemperature(OneWire_t* OneWireStruct, uint8_t *ROM, 
     tl = OneWire_ReadByte(OneWireStruct);
     conf = OneWire_ReadByte(OneWireStruct);
     
-    th = (uint8_t)temp; 
+    th = (char)temp; 
 
     /* Reset line */
     OneWire_Reset(OneWireStruct);
@@ -340,14 +345,15 @@ uint8_t DS18B20_SetAlarmHighTemperature(OneWire_t* OneWireStruct, uint8_t *ROM, 
     /* Copy scratchpad to EEPROM of DS18B20 */
     OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_CPYSCRATCHPAD);
     
-    return 1;
+    return DS18B20_CONVERSION_SUCCESS;
 }
 
-uint8_t DS18B20_DisableAlarmTemperature(OneWire_t* OneWireStruct, uint8_t *ROM) {
-    uint8_t tl, th, conf;
-    if (!DS18B20_Is(ROM)) {
-        return 0;
-    }
+char DS18B20_DisableAlarmTemperature(OneWire_t* OneWireStruct, uint8_t *ROM) {
+    if (!OneWireStruct)   return DS18B20_USAGE_ERROR;
+    if (!ROM)             return DS18B20_USAGE_ERROR;
+    if (!DS18B20_Is(ROM)) return DEVICE_NOT_DS18B20;
+
+    char tl, th, conf;
     /* Reset line */
     OneWire_Reset(OneWireStruct);
     /* Select ROM number */
@@ -388,14 +394,16 @@ uint8_t DS18B20_DisableAlarmTemperature(OneWire_t* OneWireStruct, uint8_t *ROM) 
     return 1;
 }
 
-uint8_t DS18B20_AlarmSearch(OneWire_t* OneWireStruct) {
+char DS18B20_AlarmSearch(OneWire_t* OneWireStruct) {
+    if (!OneWireStruct)   return DS18B20_USAGE_ERROR;
     /* Start alarm search */
     return OneWire_Search(OneWireStruct, DS18B20_CMD_ALARMSEARCH);
 }
 
-uint8_t DS18B20_AllDone(OneWire_t* OneWireStruct) {
+char DS18B20_AllDone(OneWire_t* OneWireStruct) {
+    if (!OneWireStruct)   return DS18B20_USAGE_ERROR;
     /* If read bit is low, then device is not finished yet with calculation temperature */
-    return OneWire_ReadBit(OneWireStruct) == 1;
+    return OneWire_ReadBit(OneWireStruct) == DS18B20_CONVERSION_SUCCESS;
 }
 
 
