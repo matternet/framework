@@ -92,7 +92,7 @@ char DS18B20_Read(OneWire_t* OneWireStruct, uint8_t *ROM, float *destination) {
     /* Check if CRC is ok */
     if (crc != data[DS18B20_DATA_CRC_BYTE]) {
         /* CRC invalid */
-        return 4;
+        return DS18B20_CRC_INVALID;
     }
     
     /* First two bytes of scratchpad are temperature values */
@@ -159,7 +159,7 @@ char DS18B20_Read(OneWire_t* OneWireStruct, uint8_t *ROM, float *destination) {
     *destination = decimal;
     
     /* Return 1, temperature valid */
-    return 1;
+    return DS18B20_CONVERSION_SUCCESS;
 }
 
 char DS18B20_GetResolution(OneWire_t* OneWireStruct, uint8_t *ROM) {
