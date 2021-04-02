@@ -87,7 +87,7 @@ char DS18B20_Read(OneWire_t* OneWireStruct, uint8_t *ROM, float *destination) {
     }
     
     /* Calculate CRC */
-    crc = OneWire_CRC8(data, 8);
+    crc = OneWire_CRC8(data, DS18B20_DATA_CRC_BYTE);
     
     /* Check if CRC is ok */
     if (crc != data[DS18B20_DATA_CRC_BYTE]) {
@@ -116,7 +116,9 @@ char DS18B20_Read(OneWire_t* OneWireStruct, uint8_t *ROM, float *destination) {
         >> DS18B20_CONFIG_REGISTER_RESERVED_BITS) + 9;
     
     /* Store temperature integer digits and decimal digits */
+    /* Ignore all but 1 signed bit */
     digit = temperature >> 4;
+    /* extract signed bit and 3 digit temp bits from MSB, put in appropriate power */
     digit |= ((temperature >> 8) & 0x7) << 4;
     
     /* Store decimal digits */

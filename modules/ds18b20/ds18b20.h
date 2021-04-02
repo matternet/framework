@@ -109,12 +109,14 @@
 #endif
 
 /* DS18B20 Common Numbers */
-#define DS18B20_DATA_CRC_BYTE           8
-#define DS18B20_DATA_LSB                0
-#define DS18B20_DATA_MSB                1
+#define DS18B20_DATA_CRC_BYTE  8
+#define DS18B20_DATA_LSB       0
+#define DS18B20_DATA_MSB       1
+
 #define DS18B20_MAX_TEMP_DEG_C 125
 #define DS18B20_MIN_TEMP_DEG_C -55
-#define DS18B20_CONFIG_REGISTER_BYTE 4
+
+#define DS18B20_CONFIG_REGISTER_BYTE          4
 #define DS18B20_CONFIG_REGISTER_R0_R1_BITMASK 0x60
 #define DS18B20_CONFIG_REGISTER_RESERVED_BITS 5
 
