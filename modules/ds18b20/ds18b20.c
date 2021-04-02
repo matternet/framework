@@ -24,7 +24,6 @@
  * |----------------------------------------------------------------------
  */
 #include "ds18b20.h"
-#include <assert.h>
 
 char DS18B20_Start(OneWire_t* OneWireStruct, uint8_t *ROM) {
     if (!OneWireStruct)   return DS18B20_USAGE_ERROR;
