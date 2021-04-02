@@ -101,22 +101,24 @@
 #define DS18B20_RESOLUTION_R1           6
 #define DS18B20_RESOLUTION_R0           5
 
-/* DS18B20 Common Numbers */
-#define DS18B20_READ_DATA_SIZE          9
-#define DS18B20_READ_CRC_BYTE           8
-#define DS18B20_DATA_LSB                0
-#define DS18B20_DATA_MSB                1
-
 /* CRC enabled */
-#ifdef DS18B20_USE_CRC	
-#define DS18B20_DATA_LEN				9
+#ifdef DS18B20_USE_CRC  
+#define DS18B20_DATA_LEN                9
 #else
-#define DS18B20_DATA_LEN				2
+#define DS18B20_DATA_LEN                2
 #endif
 
+/* DS18B20 Common Numbers */
+#define DS18B20_DATA_CRC_BYTE           8
+#define DS18B20_DATA_LSB                0
+#define DS18B20_DATA_MSB                1
 #define DS18B20_MAX_TEMP_DEG_C 125
 #define DS18B20_MIN_TEMP_DEG_C -55
+#define DS18B20_CONFIG_REGISTER_BYTE 4
+#define DS18B20_CONFIG_REGISTER_R0_R1_BITMASK 0x60
+#define DS18B20_CONFIG_REGISTER_RESERVED_BITS 5
 
+/* Return Codes*/
 #define DS18B20_USAGE_ERROR           -1
 #define DEVICE_NOT_DS18B20             0
 #define DS18B20_CONVERSION_SUCCESS     1

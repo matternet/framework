@@ -27,9 +27,8 @@
 extern "C" {
 #endif
 
-// includes to access HAL/PAL calls, need to access directly since abstraction for ChibiOS in framework is lackluster
 #include <hal.h>                   // all encompasing hal.h include. includes everything related to hal that you would need.
-#include <modules/timing/timing.h> // need timing module for microsecond level bit-banging
+#include <modules/timing/timing.h> // need timing module for blocking microsecond level bit-banging
 #include <stdint.h>
 
 /* OneWire commands */
@@ -47,20 +46,17 @@ extern "C" {
 #define ROM_DATA_SIZE_BITS  64
 #define ROM_DATA_SIZE_BYTES 8
 
-/* Delay timing for onewire protocol */
+/* Delay timing for onewire protocol, refer to datasheet for more details */
 /* NOTE(vwnguyen): if any of these times are used to toggle between output -> input, add 4-5 us for the toggle time*/
-
-#define ONEWIRE_TX_MIN_RESET_PULSE_TIME_USEC  480 // min time required to pull line low for reset pulse
-#define ONEWIRE_WAIT_PRESENCE_PULSE_TIME_USEC 70  // time given to other onewire device before we poll for presence pulse 
-#define ONEWIRE_RX_MIN_RESET_PULSE_TIME_USEC  480 - ONEWIRE_WAIT_PRESENCE_PULSE_TIME_USEC // fill out remaining time needed for reset
-
-#define ONEWIRE_TX_WRITE_0_BIT_LO_TIME_USEC 65   // 60 < time < 120 us
-#define ONEWIRE_TX_WRITE_1_BIT_LO_TIME_USEC 10   // time < 15us, helps to be closer to 15us
-#define ONEWIRE_TX_WRITE_1_BIT_HI_TIME_USEC 60 - ONEWIRE_TX_WRITE_1_BIT_LO_TIME_USEC // fill out remainder of write 1 slot time
-#define ONEWIRE_TX_RECOVER_TIME_USEC          5  // any value > 1us
-#define ONEWIRE_WAIT_SLAVE_READ_BIT_TIME_USEC 55               
-
-#define ONEWIRE_RX_READ_BIT_LO_TIME_USEC 3 
+#define ONEWIRE_TX_MIN_RESET_PULSE_TIME_USEC             480 // min time required to pull line low for reset pulse
+#define ONEWIRE_RX_MIN_RESET_PULSE_TIME_USEC             480 - ONEWIRE_WAIT_PRESENCE_PULSE_TIME_USEC // fill out remaining time needed for reset
+#define ONEWIRE_TX_WRITE_0_BIT_LO_TIME_USEC              65  // 60 < time < 120 us
+#define ONEWIRE_TX_WRITE_1_BIT_LO_TIME_USEC              10  // time < 15us, helps to be closer to 15us
+#define ONEWIRE_TX_WRITE_1_BIT_HI_TIME_USEC              60 - ONEWIRE_TX_WRITE_1_BIT_LO_TIME_USEC    // fill out remainder of write 1 slot time
+#define ONEWIRE_TX_RECOVER_TIME_USEC                     5   // any value > 1us
+#define ONEWIRE_WAIT_SLAVE_READ_BIT_TIME_USEC            55               
+#define ONEWIRE_WAIT_PRESENCE_PULSE_TIME_USEC            70  // time given to other onewire device before we poll for presence pulse 
+#define ONEWIRE_RX_READ_BIT_LO_TIME_USEC                 3 
 #define ONEWIRE_RX_READ_BIT_WAIT_BEFORE_SAMPLE_TIME_USEC 5
 
 //#######################################################################################################

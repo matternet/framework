@@ -61,7 +61,7 @@ char DS18B20_Read(OneWire_t* OneWireStruct, uint8_t *ROM, float *destination) {
     int8_t digit, minus = 0;
     float decimal;
     unsigned char i = 0;
-    unsigned char data[DS18B20_READ_DATA_SIZE];
+    unsigned char data[DS18B20_DATA_LEN];
     unsigned char crc;
     
     /* Check if device is DS18B20 */
@@ -81,7 +81,7 @@ char DS18B20_Read(OneWire_t* OneWireStruct, uint8_t *ROM, float *destination) {
     OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_RSCRATCHPAD);
     
     /* Get data */
-    for (i = 0; i < DS18B20_READ_DATA_SIZE; i++) {
+    for (i = 0; i < DS18B20_DATA_LEN; i++) {
         /* Read byte by byte */
         data[i] = OneWire_ReadByte(OneWireStruct);
     }
@@ -90,7 +90,7 @@ char DS18B20_Read(OneWire_t* OneWireStruct, uint8_t *ROM, float *destination) {
     crc = OneWire_CRC8(data, 8);
     
     /* Check if CRC is ok */
-    if (crc != data[DS18B20_READ_CRC_BYTE]) {
+    if (crc != data[DS18B20_DATA_CRC_BYTE]) {
         /* CRC invalid */
         return 4;
     }
@@ -109,15 +109,23 @@ char DS18B20_Read(OneWire_t* OneWireStruct, uint8_t *ROM, float *destination) {
     }
 
     /* Get sensor resolution */
-    resolution = ((data[4] & 0x60) >> 5) + 9;
-
+    /* Extract resolution bits with &, Ignore unused bits in the configuration register 
+    which are reserved for internal use by the device. Add 9 to convert R0 and R1 -> 9-12 for 
+    bits in resolution */
+    resolution = ((data[DS18B20_CONFIG_REGISTER_BYTE] & DS18B20_CONFIG_REGISTER_R0_R1_BITMASK) 
+        >> DS18B20_CONFIG_REGISTER_RESERVED_BITS) + 9;
     
     /* Store temperature integer digits and decimal digits */
     digit = temperature >> 4;
     digit |= ((temperature >> 8) & 0x7) << 4;
     
-    /* Resolution may be either 9, 10, 11, or 12 bits */
     /* Store decimal digits */
+    /* Resolution may be either 9, 10, 11, or 12 bits.
+    If the DS18B20  is  configured for  12-bit resolution, all bits in the temperature
+    register will contain valid  data. For 11-bit resolution, bit 0 is undefined. 
+    For  10-bit resolution, bits 1 and 0 are undefined, and for 9-bit resolution  
+    bits  2,  1,  and  0  are  undefined. Shift as needed to extract 1 step of 
+    the decimal temperature then multiply by decimal steps per resolution */
     switch (resolution) {
         case 9: {
             decimal = (temperature >> 3) & 0x01;
@@ -144,7 +152,7 @@ char DS18B20_Read(OneWire_t* OneWireStruct, uint8_t *ROM, float *destination) {
     /* Check for negative part */
     decimal = digit + decimal;
     if (minus) {
-        decimal = 0 - decimal;
+        decimal *= -1;
     }
     
     /* Set to pointer */
@@ -159,7 +167,7 @@ char DS18B20_GetResolution(OneWire_t* OneWireStruct, uint8_t *ROM) {
     if (!ROM)             return DS18B20_USAGE_ERROR;
     if (!DS18B20_Is(ROM)) return DEVICE_NOT_DS18B20;
     
-    char conf;
+    char conf_register;
     /* Reset line */
     OneWire_Reset(OneWireStruct);
     /* Select ROM number */
@@ -174,10 +182,14 @@ char DS18B20_GetResolution(OneWire_t* OneWireStruct, uint8_t *ROM) {
     OneWire_ReadByte(OneWireStruct);
     
     /* 5th byte of scratchpad is configuration register */
-    conf = OneWire_ReadByte(OneWireStruct);
+    conf_register = OneWire_ReadByte(OneWireStruct);
     
     /* Return 9 - 12 value according to number of bits */
-    return ((conf & 0x60) >> 5) + 9;
+    /* Extract resolution bits with &, Ignore unused bits in the configuration register 
+    which are reserved for internal use by the device. Add 9 to convert R0 and R1 -> 9-12 for 
+    bits in resolution */
+    return = ((data[DS18B20_CONFIG_REGISTER_BYTE] & DS18B20_CONFIG_REGISTER_R0_R1_BITMASK) 
+        >> DS18B20_CONFIG_REGISTER_RESERVED_BITS) + 9;
 }
 
 char DS18B20_SetResolution(OneWire_t* OneWireStruct, uint8_t *ROM, DS18B20_Resolution_t resolution) {
@@ -185,7 +197,7 @@ char DS18B20_SetResolution(OneWire_t* OneWireStruct, uint8_t *ROM, DS18B20_Resol
     if (!ROM)             return DS18B20_USAGE_ERROR;
     if (!DS18B20_Is(ROM)) return DEVICE_NOT_DS18B20;
 
-    char th, tl, conf;
+    char trigger_register_hi, trigger_register_lo, conf_register;
     /* Reset line */
     OneWire_Reset(OneWireStruct);
     /* Select ROM number */
@@ -197,35 +209,35 @@ char DS18B20_SetResolution(OneWire_t* OneWireStruct, uint8_t *ROM, DS18B20_Resol
     OneWire_ReadByte(OneWireStruct);
     OneWire_ReadByte(OneWireStruct);
     
-    th = OneWire_ReadByte(OneWireStruct);
-    tl = OneWire_ReadByte(OneWireStruct);
-    conf = OneWire_ReadByte(OneWireStruct);
+    trigger_register_hi = OneWire_ReadByte(OneWireStruct);
+    trigger_register_lo = OneWire_ReadByte(OneWireStruct);
+    conf_register = OneWire_ReadByte(OneWireStruct);
     
     if (resolution == DS18B20_Resolution_9bits) {
-        conf &= ~(1 << DS18B20_RESOLUTION_R1);
-        conf &= ~(1 << DS18B20_RESOLUTION_R0);
+        conf_register &= ~(1 << DS18B20_RESOLUTION_R1);
+        conf_register &= ~(1 << DS18B20_RESOLUTION_R0);
     } else if (resolution == DS18B20_Resolution_10bits) {
-        conf &= ~(1 << DS18B20_RESOLUTION_R1);
-        conf |= 1 << DS18B20_RESOLUTION_R0;
+        conf_register &= ~(1 << DS18B20_RESOLUTION_R1);
+        conf_register |= 1 << DS18B20_RESOLUTION_R0;
     } else if (resolution == DS18B20_Resolution_11bits) {
-        conf |= 1 << DS18B20_RESOLUTION_R1;
-        conf &= ~(1 << DS18B20_RESOLUTION_R0);
+        conf_register |= 1 << DS18B20_RESOLUTION_R1;
+        conf_register &= ~(1 << DS18B20_RESOLUTION_R0);
     } else if (resolution == DS18B20_Resolution_12bits) {
-        conf |= 1 << DS18B20_RESOLUTION_R1;
-        conf |= 1 << DS18B20_RESOLUTION_R0;
+        conf_register |= 1 << DS18B20_RESOLUTION_R1;
+        conf_register |= 1 << DS18B20_RESOLUTION_R0;
     }
     
     /* Reset line */
     OneWire_Reset(OneWireStruct);
     /* Select ROM number */
     OneWire_SelectWithPointer(OneWireStruct, ROM);
-    /* Write scratchpad command by OneWireStruct protocol, only th, tl and conf register can be written */
+    /* Write scratchpad command by OneWireStruct protocol, only trigger_register_hi, trigger_register_lo and conf_register register can be written */
     OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_WSCRATCHPAD);
     
     /* Write bytes */
-    OneWire_WriteByte(OneWireStruct, th);
-    OneWire_WriteByte(OneWireStruct, tl);
-    OneWire_WriteByte(OneWireStruct, conf);
+    OneWire_WriteByte(OneWireStruct, trigger_register_hi);
+    OneWire_WriteByte(OneWireStruct, trigger_register_lo);
+    OneWire_WriteByte(OneWireStruct, conf_register);
     
     /* Reset line */
     OneWire_Reset(OneWireStruct);
@@ -249,12 +261,12 @@ char DS18B20_SetAlarmLowTemperature(OneWire_t* OneWireStruct, uint8_t *ROM, int8
     if (!ROM)             return DS18B20_USAGE_ERROR;
     if (!DS18B20_Is(ROM)) return DEVICE_NOT_DS18B20;
 
-    char tl, th, conf;
+    char trigger_register_lo, trigger_register_hi, conf_register;
     if (temp > DS18B20_MAX_TEMP_DEG_C) {
         temp = DS18B20_MAX_TEMP_DEG_C;
     } 
-    if (temp < -55) {
-        temp = -55;
+    if (temp < DS18B20_MIN_TEMP_DEG_C) {
+        temp = DS18B20_MIN_TEMP_DEG_C;
     }
     /* Reset line */
     OneWire_Reset(OneWireStruct);
@@ -267,23 +279,23 @@ char DS18B20_SetAlarmLowTemperature(OneWire_t* OneWireStruct, uint8_t *ROM, int8
     OneWire_ReadByte(OneWireStruct);
     OneWire_ReadByte(OneWireStruct);
     
-    th = OneWire_ReadByte(OneWireStruct);
-    tl = OneWire_ReadByte(OneWireStruct);
-    conf = OneWire_ReadByte(OneWireStruct);
+    trigger_register_hi = OneWire_ReadByte(OneWireStruct);
+    trigger_register_lo = OneWire_ReadByte(OneWireStruct);
+    conf_register = OneWire_ReadByte(OneWireStruct);
     
-    tl = (char)temp; 
+    trigger_register_lo = temp; 
 
     /* Reset line */
     OneWire_Reset(OneWireStruct);
     /* Select ROM number */
     OneWire_SelectWithPointer(OneWireStruct, ROM);
-    /* Write scratchpad command by OneWireStruct protocol, only th, tl and conf register can be written */
+    /* Write scratchpad command by OneWireStruct protocol, only trigger_register_hi, trigger_register_lo and conf_register register can be written */
     OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_WSCRATCHPAD);
     
     /* Write bytes */
-    OneWire_WriteByte(OneWireStruct, th);
-    OneWire_WriteByte(OneWireStruct, tl);
-    OneWire_WriteByte(OneWireStruct, conf);
+    OneWire_WriteByte(OneWireStruct, trigger_register_hi);
+    OneWire_WriteByte(OneWireStruct, trigger_register_lo);
+    OneWire_WriteByte(OneWireStruct, conf_register);
     
     /* Reset line */
     OneWire_Reset(OneWireStruct);
@@ -300,7 +312,7 @@ char DS18B20_SetAlarmHighTemperature(OneWire_t* OneWireStruct, uint8_t *ROM, int
     if (!ROM)             return DS18B20_USAGE_ERROR;
     if (!DS18B20_Is(ROM)) return DEVICE_NOT_DS18B20;
 
-    char tl, th, conf;
+    char trigger_register_lo, trigger_register_hi, conf_register;
 
     if (temp > DS18B20_MAX_TEMP_DEG_C) {
         temp = DS18B20_MAX_TEMP_DEG_C;
@@ -319,23 +331,23 @@ char DS18B20_SetAlarmHighTemperature(OneWire_t* OneWireStruct, uint8_t *ROM, int
     OneWire_ReadByte(OneWireStruct);
     OneWire_ReadByte(OneWireStruct);
     
-    th = OneWire_ReadByte(OneWireStruct);
-    tl = OneWire_ReadByte(OneWireStruct);
-    conf = OneWire_ReadByte(OneWireStruct);
+    trigger_register_hi = OneWire_ReadByte(OneWireStruct);
+    trigger_register_lo = OneWire_ReadByte(OneWireStruct);
+    conf_register = OneWire_ReadByte(OneWireStruct);
     
-    th = (char)temp; 
+    trigger_register_hi = temp; 
 
     /* Reset line */
     OneWire_Reset(OneWireStruct);
     /* Select ROM number */
     OneWire_SelectWithPointer(OneWireStruct, ROM);
-    /* Write scratchpad command by OneWireStruct protocol, only th, tl and conf register can be written */
+    /* Write scratchpad command by OneWireStruct protocol, only trigger_register_hi, trigger_register_lo and conf_register register can be written */
     OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_WSCRATCHPAD);
     
     /* Write bytes */
-    OneWire_WriteByte(OneWireStruct, th);
-    OneWire_WriteByte(OneWireStruct, tl);
-    OneWire_WriteByte(OneWireStruct, conf);
+    OneWire_WriteByte(OneWireStruct, trigger_register_hi);
+    OneWire_WriteByte(OneWireStruct, trigger_register_lo);
+    OneWire_WriteByte(OneWireStruct, conf_register);
     
     /* Reset line */
     OneWire_Reset(OneWireStruct);
@@ -352,7 +364,7 @@ char DS18B20_DisableAlarmTemperature(OneWire_t* OneWireStruct, uint8_t *ROM) {
     if (!ROM)             return DS18B20_USAGE_ERROR;
     if (!DS18B20_Is(ROM)) return DEVICE_NOT_DS18B20;
 
-    char tl, th, conf;
+    char trigger_register_lo, trigger_register_hi, conf_register;
     /* Reset line */
     OneWire_Reset(OneWireStruct);
     /* Select ROM number */
@@ -364,24 +376,24 @@ char DS18B20_DisableAlarmTemperature(OneWire_t* OneWireStruct, uint8_t *ROM) {
     OneWire_ReadByte(OneWireStruct);
     OneWire_ReadByte(OneWireStruct);
     
-    th = OneWire_ReadByte(OneWireStruct);
-    tl = OneWire_ReadByte(OneWireStruct);
-    conf = OneWire_ReadByte(OneWireStruct);
+    trigger_register_hi = OneWire_ReadByte(OneWireStruct);
+    trigger_register_lo = OneWire_ReadByte(OneWireStruct);
+    conf_register = OneWire_ReadByte(OneWireStruct);
     
-    th = DS18B20_MAX_TEMP_DEG_C;
-    tl = DS18B20_MIN_TEMP_DEG_C;
+    trigger_register_hi = DS18B20_MAX_TEMP_DEG_C;
+    trigger_register_lo = DS18B20_MIN_TEMP_DEG_C;
 
     /* Reset line */
     OneWire_Reset(OneWireStruct);
     /* Select ROM number */
     OneWire_SelectWithPointer(OneWireStruct, ROM);
-    /* Write scratchpad command by OneWireStruct protocol, only th, tl and conf register can be written */
+    /* Write scratchpad command by OneWireStruct protocol, only trigger_register_hi, trigger_register_lo and conf_register register can be written */
     OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_WSCRATCHPAD);
     
     /* Write bytes */
-    OneWire_WriteByte(OneWireStruct, th);
-    OneWire_WriteByte(OneWireStruct, tl);
-    OneWire_WriteByte(OneWireStruct, conf);
+    OneWire_WriteByte(OneWireStruct, trigger_register_hi);
+    OneWire_WriteByte(OneWireStruct, trigger_register_lo);
+    OneWire_WriteByte(OneWireStruct, conf_register);
     
     /* Reset line */
     OneWire_Reset(OneWireStruct);
