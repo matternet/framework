@@ -261,10 +261,10 @@ char OneWire_Search(OneWire_t* OneWireStruct, uint8_t command) {
                 }
             }
         /* Loop until through all ROM bytes 0-7 */
-        } while (rom_byte_number < 8);
+        } while (rom_byte_number < ROM_DATA_SIZE_BYTES);
 
         /* If the search was successful then */
-        if (!(id_bit_number < 65)) {
+        if (!(id_bit_number <= ROM_DATA_SIZE_BITS)) {
             /* Search successful so set LastDiscrepancy, LastDeviceFlag, search_result */
             OneWireStruct->LastDiscrepancy = last_zero;
 
