@@ -21,8 +21,6 @@
 
 // ONEWIRE ABSTRACTION HELPERS
 
-// NOTE(vwnguyen): Blocking sleep function. Seems to be OK for our application.
-// NOTE(vwnguyen): Seems to be more accurate than using ChThdSleepMicroseconds()
 void OneWire_Delay(uint32_t time_us) {
     usleep(time_us);
 }
@@ -77,8 +75,7 @@ OneWireStatus OneWire_Reset(OneWire_t* OneWireStruct) {
     /* Complete reset pulse min time */
     OneWire_Delay(ONEWIRE_RX_MIN_RESET_PULSE_TIME_USEC);
     /* Return value of presence pulse, 0 = OK, 1 = ERROR */
-    /* Invert to comply with ONEWIRE_SUCCESS and ONEWIRE_FAILURE */
-    return !(presence_pulse == 0);
+    return (presence_pulse == 0);
 }
 
 OneWireStatus OneWire_WriteBit(OneWire_t* OneWireStruct, uint8_t bit) {
@@ -92,8 +89,7 @@ OneWireStatus OneWire_WriteBit(OneWire_t* OneWireStruct, uint8_t bit) {
         /* release line, Hold for remainder of min time for write 1 slot */
         OneWire_Input(OneWireStruct);
         OneWire_Delay(ONEWIRE_TX_WRITE_1_BIT_HI_TIME_USEC);
-    }
-    else {
+    } else {
         /* Set line low */
         OneWire_Output(OneWireStruct);
         OneWire_Low(OneWireStruct);
@@ -133,9 +129,8 @@ OneWireStatus OneWire_ReadBit(OneWire_t* OneWireStruct, uint8_t* ReadVal) {
 
 OneWireStatus OneWire_WriteByte(OneWire_t* OneWireStruct, uint8_t byte) {
     if (!OneWireStruct) return ONEWIRE_FAILURE;
-    uint8_t i = 8;
     /* Write 8 bits */
-    while (i--) {
+    for (uint8_t i = 0; i < 8; i++) {
         /* LSB bit is first */
         OneWire_WriteBit(OneWireStruct, byte & 0x01);
         byte >>= 1;
@@ -145,11 +140,11 @@ OneWireStatus OneWire_WriteByte(OneWire_t* OneWireStruct, uint8_t byte) {
 
 OneWireStatus OneWire_ReadByte(OneWire_t* OneWireStruct, uint8_t* ReadVal) {
     if (!OneWireStruct || !ReadVal) return ONEWIRE_FAILURE;    
-    uint8_t i = 8, byte = 0, bitval = 0;
-    while (i--) {
-        OneWire_ReadBit(OneWireStruct, &bitval);
-        byte >>= 1;
-        byte |= ( bitval << 7);
+    uint8_t bitval = 0;
+    /* Data is transferred LSb first */
+    for (uint8_t i = 0; i < 8; i++) {
+        OneWire_ReadBit(OneWireStruct, &bitval);  // Could add error-handling here, but unnecessary IMO
+        *ReadVal |= (bitval << i)
     }
 
     *ReadVal = byte;
@@ -195,8 +190,8 @@ OneWireStatus OneWire_Search(OneWire_t* OneWireStruct, uint8_t command) {
 
     /* Check if any devices */
     if (!OneWireStruct->LastDeviceFlag) {
-        /* 1-Wire reset */
-        if (OneWire_Reset(OneWireStruct)) {
+        /* If presence pulse is not good after reset */
+        if (OneWire_Reset(OneWireStruct)==ONEWIRE_FAILURE) {
             /* Reset the search */
             OneWireStruct->LastDiscrepancy       = 0;
             OneWireStruct->LastDeviceFlag        = 0;
@@ -280,10 +275,10 @@ OneWireStatus OneWire_Search(OneWire_t* OneWireStruct, uint8_t command) {
 
     /* If no device found then reset counters so next 'search' will be like a first */
     if (!search_result || !OneWireStruct->ROM_NUM[0]) {
-        OneWireStruct->LastDiscrepancy = 0;
-        OneWireStruct->LastDeviceFlag = 0;
+        OneWireStruct->LastDiscrepancy       = 0;
+        OneWireStruct->LastDeviceFlag        = 0;
         OneWireStruct->LastFamilyDiscrepancy = 0;
-        search_result = 0;
+        search_result                        = 0;
     }
 
     return search_result == ONEWIRE_SUCCESS;
@@ -305,7 +300,7 @@ OneWireStatus OneWire_Verify(OneWire_t* OneWireStruct) {
     OneWireStruct->LastDiscrepancy = ROM_DATA_SIZE_BITS;
     OneWireStruct->LastDeviceFlag = 0;
 
-    if (OneWire_Search(OneWireStruct, ONEWIRE_CMD_SEARCHROM)) {
+    if (OneWire_Search(OneWireStruct, ONEWIRE_CMD_SEARCHROM)==ONEWIRE_SUCCESS) {
         /* Check if same device found */
         rslt = 1;
         for (i = 0; i < ROM_DATA_SIZE_BYTES; i++) {
@@ -332,10 +327,9 @@ OneWireStatus OneWire_Verify(OneWire_t* OneWireStruct) {
 
 OneWireStatus OneWire_TargetSetup(OneWire_t* OneWireStruct, uint8_t family_code) {
     if (!OneWireStruct) return ONEWIRE_FAILURE;
-    uint8_t i;
     /* Set the search state to find SearchFamily type devices */
     OneWireStruct->ROM_NUM[0] = family_code;
-    for (i = 1; i < ROM_DATA_SIZE_BYTES; i++) {
+    for (uint8_t i = 1; i < ROM_DATA_SIZE_BYTES; i++) {
         OneWireStruct->ROM_NUM[i] = 0;
     }
 
@@ -379,23 +373,21 @@ OneWireStatus OneWire_Select(OneWire_t* OneWireStruct, uint8_t* addr) {
     OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_MATCHROM);
     
     for (i = 0; i < ROM_DATA_SIZE_BYTES; i++) {
-        OneWire_WriteByte(OneWireStruct, *(addr + i));
+        OneWire_WriteByte(OneWireStruct, addr[i]);
     }
     return ONEWIRE_SUCCESS;
 }
 
 OneWireStatus OneWire_SelectWithPointer(OneWire_t* OneWireStruct, uint8_t* ROM) {
     if (!OneWireStruct || !ROM) return ONEWIRE_FAILURE;
-    uint8_t i;
     OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_MATCHROM);
-    
-    for (i = 0; i < ROM_DATA_SIZE_BYTES; i++) {
-        OneWire_WriteByte(OneWireStruct, *(ROM + i));
+    for (uint8_t i = 0; i < ROM_DATA_SIZE_BYTES; i++) {
+        OneWire_WriteByte(OneWireStruct, ROM[i]);
     }   
     return ONEWIRE_SUCCESS;
 }
 
-OneWireStatus OneWire_CRC8(uint8_t *addr, uint8_t len, uint8_t* pcrc) {
+OneWireStatus OneWire_CRC8(uint8_t *addr, uint8_t len, uint8_t* rslt) {
     if (!addr) return ONEWIRE_FAILURE;
     uint8_t crc = 0, inbyte, i, mix;
     while (len--) {
@@ -411,6 +403,6 @@ OneWireStatus OneWire_CRC8(uint8_t *addr, uint8_t len, uint8_t* pcrc) {
     }
     
     /* Return calculated CRC */
-    *pcrc = crc;
+    *rslt = crc;
     return ONEWIRE_SUCCESS;
 }

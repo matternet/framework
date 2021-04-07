@@ -20,7 +20,7 @@
 
 
 #ifndef ONEWIRE_H
-#define ONEWIRE_H 100
+#define ONEWIRE_H
 
 /* C++ detection */
 #ifdef __cplusplus
@@ -48,11 +48,6 @@ extern "C" {
 #define ROM_DATA_SIZE_BITS  (ROM_DATA_SIZE_BYTES * 8)
 
 /* Delay timing for onewire protocol */
-
-// NOTE(vwnguyen): Min time taken to toggle between OUTPUT -> INPUT ~= 4-5us
-// NOTE(vwnguyen): using OneWire_Delay on top of this toggle time should result
-// NOTE(vwnguyen): in total_delay = toggle_time + delay_time
-
 #define ONEWIRE_TX_MIN_RESET_PULSE_TIME_USEC             480 // min time required to pull line low for reset pulse
 #define ONEWIRE_WAIT_PRESENCE_PULSE_TIME_USEC            70  // time given to other onewire device before we poll for presence pulse 
 #define ONEWIRE_RX_MIN_RESET_PULSE_TIME_USEC             (480 - ONEWIRE_WAIT_PRESENCE_PULSE_TIME_USEC) // fill out remaining time needed for reset
@@ -64,11 +59,10 @@ extern "C" {
 #define ONEWIRE_RX_READ_BIT_LO_TIME_USEC                 3 
 #define ONEWIRE_RX_READ_BIT_WAIT_BEFORE_SAMPLE_TIME_USEC 5
 
-/* Return codes */
-
+/* General OneWire return codes */
 typedef enum {
-    ONEWIRE_FAILURE = 0,     // Error: Usage Error, Pulse Error, or Data Transmission failed
-    ONEWIRE_SUCCESS = 1,     // Error: Invalid data size
+    ONEWIRE_FAILURE          =  0, // Error: Usage / Operation Failure.
+    ONEWIRE_SUCCESS          =  1  // Operation Successful
 } OneWireStatus;
 
 /**
@@ -86,22 +80,12 @@ typedef enum {
  * @note   Except ROM_NUM member, everything is fully private and should not be touched by user
  */
 typedef struct {
-	uint32_t PalLine;               		/*!< GPIO port to be used for I/O functions */
-	uint8_t  LastDiscrepancy;       		/*!< Search private */
-	uint8_t  LastFamilyDiscrepancy; 		/*!< Search private */
-	uint8_t  LastDeviceFlag;        		/*!< Search private */
+	uint32_t PalLine;               		 /*!< GPIO port to be used for I/O functions */
+	uint8_t  LastDiscrepancy;       		 /*!< Search private */
+	uint8_t  LastFamilyDiscrepancy; 		 /*!< Search private */
+	uint8_t  LastDeviceFlag;        		 /*!< Search private */
 	uint8_t  ROM_NUM[ROM_DATA_SIZE_BYTES];   /*!< 8-bytes address of last search device */
 } OneWire_t;
-
-
-/* OneWire delay */
-void OneWire_Delay(uint32_t time_us);
-
-/* Pin settings */
-OneWireStatus OneWire_Low(OneWire_t* OneWireStruct);
-OneWireStatus OneWire_High(OneWire_t* OneWireStruct);
-OneWireStatus OneWire_Input(OneWire_t* OneWireStruct);
-OneWireStatus OneWire_Output(OneWire_t* OneWireStruct);
 
 /**
  * @}
@@ -113,10 +97,50 @@ OneWireStatus OneWire_Output(OneWire_t* OneWireStruct);
  * @{
  */
 
+/* OneWire delay */
 /**
- * @brief  Initializes OneWire bus
- * @param  *OneWireStruct: Pointer to @ref OneWire_t empty working onewire structure
- * @param  *Pointer to GPIO port used for onewire channel
+ * @brief  Sleep for time_us microseconds
+ * @note   Blocking sleep function. Seems to be faster/more accurate than ChThdSleepMicroseconds()
+ * @note   Min time taken to toggle between OUTPUT -> INPUT ~= 4-5us
+ * @note   If you are using OneWire_Delay while toggling output->input should result in
+ * @note   total_delay = toggle_time + delay_time
+ * @param  time_us: time to put system to sleep
+ * @return retval: see defintion of OneWireStatus
+ */
+void OneWire_Delay(uint32_t time_us);
+
+/* Pin settings */
+/**
+ * @brief  Set OneWire bus low
+ * @param  *OneWireStruct: Pointer to an initialized @ref Onewire_t structure
+ * @return retval: see defintion of OneWireStatus
+ */
+OneWireStatus OneWire_Low(OneWire_t* OneWireStruct);
+
+/**
+ * @brief  Set OneWire bus high
+ * @param  *OneWireStruct: Pointer to an initialized @ref Onewire_t structure
+ * @return retval: see defintion of OneWireStatus
+ */
+OneWireStatus OneWire_High(OneWire_t* OneWireStruct);
+
+/**
+ * @brief  Release line for the onewire bus.
+ * @param  *OneWireStruct: Pointer to an initialized @ref Onewire_t structure
+ * @return retval: see defintion of OneWireStatus
+ */
+OneWireStatus OneWire_Input(OneWire_t* OneWireStruct);
+
+/**
+ * @brief  Pull line for onewire bus.
+ * @param  *OneWireStruct: Pointer to an initialized @ref Onewire_t structure
+ * @return retval: see defintion of OneWireStatus
+ */
+OneWireStatus OneWire_Output(OneWire_t* OneWireStruct);
+
+/**
+ * @brief  Initializes OneWire struct and set GPIO port.
+ * @param  *OneWireStruct: Pointer to a @ref Onewire_t structure
  * @param  PalLine: GPIO Pin to be used for onewire channel
  * @return retval: see defintion of OneWireStatus
  */
@@ -126,14 +150,14 @@ OneWireStatus OneWire_Init(OneWire_t* OneWireStruct, uint32_t PalLine);
  * @brief  Resets OneWire bus
  * 
  * @note   Sends reset command for OneWire
- * @param  *OneWireStruct: Pointer to @ref OneWire_t working onewire structure
+ * @param  *OneWireStruct: Pointer to an uninitialized @ref OneWire_t structure
  * @return retval: see defintion of OneWireStatus
  */
 OneWireStatus OneWire_Reset(OneWire_t* OneWireStruct);
 
 /**
  * @brief  Reads byte from one wire bus
- * @param  *OneWireStruct: Pointer to OneWire_t working onewire structure
+ * @param  *OneWireStruct: Pointer to an initialized @ref Onewire_t structure
  * @param  *ReadVal: Pointer to store byte value from read
  * @return retval: see defintion of OneWireStatus
  */
@@ -141,7 +165,7 @@ OneWireStatus OneWire_ReadByte(OneWire_t* OneWireStruct, uint8_t* ReadVal);
 
 /**
  * @brief  Writes byte to bus
- * @param  *OneWireStruct: Pointer to @ref OneWire_t working onewire structure
+ * @param  *OneWireStruct: Pointer to an initialized @ref Onewire_t structure
  * @param  byte: 8-bit value to write over OneWire protocol
  * @return retval: see defintion of OneWireStatus
  */
@@ -166,17 +190,16 @@ OneWireStatus OneWire_ReadBit(OneWire_t* OneWireStruct, uint8_t* ReadVal);
 /**
  * @brief  Searches for OneWire devices on specific Onewire port
  * @note   Not meant for public use. Use @ref OneWire_First and @ref OneWire_Next for this.
- * @param  *OneWireStruct: Pointer to @ref OneWire_t working onewire structure where to search
- * @param  Device status:
- *            - 0: No devices detected
- *            - > 0: Device detected
+ * @param  *OneWireStruct: Pointer to an initialized @ref Onewire_t structure
+ * @param  command: Command to write on onewire bus, see #defines for available commands
+ * @return retval: see defintion of OneWireStatus
  */
 OneWireStatus OneWire_Search(OneWire_t* OneWireStruct, uint8_t command);
 
 /**
  * @brief  Resets search states
- * @param  *OneWireStruct: Pointer to @ref OneWire_t working onewire where to reset search values
- * @return None
+ * @param  *OneWireStruct: Pointer to an initialized @ref Onewire_t structure
+ * @return retval: see defintion of OneWireStatus
  */
 OneWireStatus OneWire_ResetSearch(OneWire_t* OneWireStruct);
 
@@ -193,64 +216,60 @@ while (status) {
 	status = OneWire_Next(&OneWireStruct);
 }
 \endcode
- * @param  *OneWireStruct: Pointer to @ref OneWire_t working onewire where to reset search values
- * @param  Device status:
- *            - 0: No devices detected
- *            - > 0: Device detected
- */
+ * @param  *OneWireStruct: Pointer to an initialized @ref Onewire_t structure
+ * @return retval: see defintion of OneWireStatus
+*/
 OneWireStatus OneWire_First(OneWire_t* OneWireStruct);
 
 /**
  * @brief  Reads next device
  * @note   Use @ref OneWire_First to start searching
- * @param  *OneWireStruct: Pointer to @ref OneWire_t working onewire
- * @param  Device status:
- *            - 0: No devices detected any more
- *            - > 0: New device detected
+ * @param  *OneWireStruct: Pointer to an initialized @ref Onewire_t structure
+ * @return retval: see defintion of OneWireStatus
  */
 OneWireStatus OneWire_Next(OneWire_t* OneWireStruct);
 
 /**
  * @brief  Gets ROM number from device from search
- * @param  *OneWireStruct: Pointer to @ref OneWire_t working onewire
+ * @param  *OneWireStruct: Pointer to an initialized @ref Onewire_t structure
  * @param  *ROM : Pointer to store ROM value
  * @param  index: Because each device has 8-bytes long ROM address, you have to call this 8 times, to get ROM bytes from 0 to 7
- * @reetval ROM byte for index (0 to 7) at current found device
+ * @return retval: see defintion of OneWireStatus
  */
 OneWireStatus OneWire_GetROM(OneWire_t* OneWireStruct, uint8_t index, uint8_t *ROM);
 
 /**
  * @brief  Gets all 8 bytes ROM value from device from search
- * @param  *OneWireStruct: Pointer to @ref OneWire_t working onewire
+ * @param  *OneWireStruct: Pointer to an initialized @ref Onewire_t structure
  * @param  *firstIndex: Pointer to first location for first byte, other bytes are automatically incremented
- * @return: ONEWIRE_SUCCESS or ONEWIRE_FAILURE
+ * @return retval: see defintion of OneWireStatus
  */
 OneWireStatus OneWire_GetFullROM(OneWire_t* OneWireStruct, uint8_t *firstIndex);
 
 /**
  * @brief  Selects specific slave on bus
- * @param  *OneWireStruct: Pointer to @ref OneWire_t working onewire
+ * @param  *OneWireStruct: Pointer to an initialized @ref Onewire_t structure
  * @param  *addr: Pointer to first location of 8-bytes long ROM address
- * @return: ONEWIRE_SUCCESS or ONEWIRE_FAILURE
+ * @return retval: see defintion of OneWireStatus
  */
 OneWireStatus OneWire_Select(OneWire_t* OneWireStruct, uint8_t* addr);
 
 /**
  * @brief  Selects specific slave on bus with pointer address
- * @param  *OneWireStruct: Pointer to @ref OneWire_t working onewire
+ * @param  *OneWireStruct: Pointer to an initialized @ref Onewire_t structure
  * @param  *ROM: Pointer to first byte of ROM address
- * @return: ONEWIRE_SUCCESS or ONEWIRE_FAILURE
+ * @return retval: see defintion of OneWireStatus
  */
 OneWireStatus OneWire_SelectWithPointer(OneWire_t* OneWireStruct, uint8_t* ROM);
 
 /**
  * @brief  Calculates 8-bit CRC for 1-wire devices
- * @param  *addr: Pointer to 8-bit array of data to calculate CRC
- * @param  len:   Number of bytes to check
- * @param  *pcrc:  Pointer to store CRC value 
- * @return: ONEWIRE_SUCCESS or ONEWIRE_FAILURE
+ * @param  *addr:  Pointer to 8-bit array of data to calculate CRC
+ * @param  len:    Number of bytes to check
+ * @param  *rslt:  Pointer to store calculated CRC value 
+ * @return retval: see defintion of OneWireStatus
  */
-OneWireStatus OneWire_CRC8(uint8_t* addr, uint8_t len, uint8_t* pcrc);
+OneWireStatus OneWire_CRC8(uint8_t* addr, uint8_t len, uint8_t* rslt);
 
 /* C++ detection */
 #ifdef __cplusplus
