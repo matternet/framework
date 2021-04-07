@@ -144,10 +144,8 @@ OneWireStatus OneWire_ReadByte(OneWire_t* OneWireStruct, uint8_t* ReadVal) {
     /* Data is transferred LSb first */
     for (uint8_t i = 0; i < 8; i++) {
         OneWire_ReadBit(OneWireStruct, &bitval);  // Could add error-handling here, but unnecessary IMO
-        *ReadVal |= (bitval << i)
+        *ReadVal |= (bitval << i);
     }
-
-    *ReadVal = byte;
     return ONEWIRE_SUCCESS;
 }
 
