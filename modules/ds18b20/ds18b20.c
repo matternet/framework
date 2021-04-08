@@ -40,7 +40,7 @@ DS18B20_Status DS18B20_Start(OneWire_t* OneWire, uint8_t *ROM) {
     if (DS18B20_Is(ROM)==DEVICE_NOT_DS18B20) return DEVICE_NOT_DS18B20;
     
     /* Reset line */
-    OneWire_Reset(OneWire);
+    if (OneWire_Reset(OneWire) == ONEWIRE_FAILURE) return DS18B20_FAILURE;
     /* Select ROM number */
     OneWire_SelectWithPointer(OneWire, ROM);
     /* Start temperature conversion */
@@ -51,8 +51,8 @@ DS18B20_Status DS18B20_Start(OneWire_t* OneWire, uint8_t *ROM) {
 
 DS18B20_Status DS18B20_StartAll(OneWire_t* OneWire) {
     if (!OneWire) return DS18B20_USAGE_ERROR;
-    /* Reset pulse */
-    OneWire_Reset(OneWire);
+    /* Reset pulse, abort if presence pulse is not good */
+    if (OneWire_Reset(OneWire) == ONEWIRE_FAILURE) return DS18B20_FAILURE;
     /* Skip rom */
     OneWire_WriteByte(OneWire, ONEWIRE_CMD_SKIPROM);
     /* Start conversion on all connected devices */
@@ -86,7 +86,7 @@ DS18B20_Status DS18B20_Read(OneWire_t* OneWire, uint8_t *ROM, float *destination
     }
 
     /* Reset line */
-    OneWire_Reset(OneWire);
+    if (OneWire_Reset(OneWire) == ONEWIRE_FAILURE) return DS18B20_FAILURE;
     /* Select ROM number */
     OneWire_SelectWithPointer(OneWire, ROM);
     /* Read scratchpad command by onewire protocol */
@@ -112,7 +112,7 @@ DS18B20_Status DS18B20_Read(OneWire_t* OneWire, uint8_t *ROM, float *destination
     temperature = data[DS18B20_DATA_LSB] | (data[DS18B20_DATA_MSB] << DS18B20_READ_CRC_BYTE);
 
     /* Reset line */
-    OneWire_Reset(OneWire);
+    if (OneWire_Reset(OneWire) == ONEWIRE_FAILURE) return DS18B20_FAILURE;
     
     /* Check if temperature is negative */
     if (temperature & DS18B20_TEMP_SIGN_BITMASK) {
@@ -187,7 +187,7 @@ DS18B20_Status DS18B20_GetResolution(OneWire_t* OneWire, uint8_t *ROM, DS18B20_R
     uint8_t conf_register = 0, temp = 0;
     
     /* Reset line */
-    OneWire_Reset(OneWire);
+    if (OneWire_Reset(OneWire) == ONEWIRE_FAILURE) return DS18B20_FAILURE;
     /* Select ROM number */
     OneWire_SelectWithPointer(OneWire, ROM);
     /* Read scratchpad command by onewire protocol */
@@ -216,7 +216,7 @@ DS18B20_Status DS18B20_SetResolution(OneWire_t* OneWire, uint8_t *ROM, DS18B20_R
     }
     
     /* Reset line */
-    OneWire_Reset(OneWire);
+    if (OneWire_Reset(OneWire) == ONEWIRE_FAILURE) return DS18B20_FAILURE;
     /* Select ROM number */
     OneWire_SelectWithPointer(OneWire, ROM);
     /* Read scratchpad command by onewire protocol */
@@ -269,7 +269,7 @@ DS18B20_Status DS18B20_SetResolution(OneWire_t* OneWire, uint8_t *ROM, DS18B20_R
     }
 
     /* Reset line */
-    OneWire_Reset(OneWire);
+    if (OneWire_Reset(OneWire) == ONEWIRE_FAILURE) return DS18B20_FAILURE;
     /* Select ROM number */
     OneWire_SelectWithPointer(OneWire, ROM);
     /* Write scratchpad command by onewire protocol, only trigger_register_hi, trigger_register_lo and conf_register register can be written */
@@ -313,7 +313,7 @@ DS18B20_Status DS18B20_SetAlarmLowTemperature(OneWire_t* OneWire, uint8_t *ROM, 
         temp = DS18B20_MIN_TEMP_DEG_C;
     }
     /* Reset line */
-    OneWire_Reset(OneWire);
+    if (OneWire_Reset(OneWire) == ONEWIRE_FAILURE) return DS18B20_FAILURE;
     /* Select ROM number */
     OneWire_SelectWithPointer(OneWire, ROM);
     /* Read scratchpad command by onewire protocol */
@@ -330,7 +330,7 @@ DS18B20_Status DS18B20_SetAlarmLowTemperature(OneWire_t* OneWire, uint8_t *ROM, 
     trigger_register_lo = (uint8_t)temp; 
 
     /* Reset line */
-    OneWire_Reset(OneWire);
+    if (OneWire_Reset(OneWire) == ONEWIRE_FAILURE) return DS18B20_FAILURE;
     /* Select ROM number */
     OneWire_SelectWithPointer(OneWire, ROM);
     /* Write scratchpad command by onewire protocol, only trigger_register_hi, trigger_register_lo and conf_register register can be written */
@@ -342,7 +342,7 @@ DS18B20_Status DS18B20_SetAlarmLowTemperature(OneWire_t* OneWire, uint8_t *ROM, 
     OneWire_WriteByte(OneWire, conf_register);
     
     /* Reset line */
-    OneWire_Reset(OneWire);
+    if (OneWire_Reset(OneWire) == ONEWIRE_FAILURE) return DS18B20_FAILURE;
     /* Select ROM number */
     OneWire_SelectWithPointer(OneWire, ROM);
     /* Copy scratchpad to EEPROM of DS18B20 */
@@ -364,7 +364,7 @@ DS18B20_Status DS18B20_SetAlarmHighTemperature(OneWire_t* OneWire, uint8_t *ROM,
         temp = DS18B20_MIN_TEMP_DEG_C;
     }
     /* Reset line */
-    OneWire_Reset(OneWire);
+    if (OneWire_Reset(OneWire) == ONEWIRE_FAILURE) return DS18B20_FAILURE;
     /* Select ROM number */
     OneWire_SelectWithPointer(OneWire, ROM);
     /* Read scratchpad command by onewire protocol */
@@ -381,7 +381,7 @@ DS18B20_Status DS18B20_SetAlarmHighTemperature(OneWire_t* OneWire, uint8_t *ROM,
     trigger_register_hi = (uint8_t)temp; 
 
     /* Reset line */
-    OneWire_Reset(OneWire);
+    if (OneWire_Reset(OneWire) == ONEWIRE_FAILURE) return DS18B20_FAILURE;
     /* Select ROM number */
     OneWire_SelectWithPointer(OneWire, ROM);
     /* Write scratchpad command by onewire protocol, only trigger_register_hi, trigger_register_lo and conf_register register can be written */
@@ -393,7 +393,7 @@ DS18B20_Status DS18B20_SetAlarmHighTemperature(OneWire_t* OneWire, uint8_t *ROM,
     OneWire_WriteByte(OneWire, conf_register);
     
     /* Reset line */
-    OneWire_Reset(OneWire);
+    if (OneWire_Reset(OneWire) == ONEWIRE_FAILURE) return DS18B20_FAILURE;
     /* Select ROM number */
     OneWire_SelectWithPointer(OneWire, ROM);
     /* Copy scratchpad to EEPROM of DS18B20 */
@@ -409,7 +409,7 @@ DS18B20_Status DS18B20_DisableAlarmTemperature(OneWire_t* OneWire, uint8_t *ROM)
     uint8_t trigger_register_lo, trigger_register_hi, conf_register, ignore;
     
     /* Reset line */
-    OneWire_Reset(OneWire);
+    if (OneWire_Reset(OneWire) == ONEWIRE_FAILURE) return DS18B20_FAILURE;
     /* Select ROM number */
     OneWire_SelectWithPointer(OneWire, ROM);
     /* Read scratchpad command by onewire protocol */
@@ -427,7 +427,7 @@ DS18B20_Status DS18B20_DisableAlarmTemperature(OneWire_t* OneWire, uint8_t *ROM)
     trigger_register_lo = (uint8_t) DS18B20_MIN_TEMP_DEG_C;
 
     /* Reset line */
-    OneWire_Reset(OneWire);
+    if (OneWire_Reset(OneWire) == ONEWIRE_FAILURE) return DS18B20_FAILURE;
     /* Select ROM number */
     OneWire_SelectWithPointer(OneWire, ROM);
     /* Write scratchpad command by onewire protocol, only trigger_register_hi, trigger_register_lo and conf_register register can be written */
@@ -439,7 +439,7 @@ DS18B20_Status DS18B20_DisableAlarmTemperature(OneWire_t* OneWire, uint8_t *ROM)
     OneWire_WriteByte(OneWire, conf_register);
     
     /* Reset line */
-    OneWire_Reset(OneWire);
+    if (OneWire_Reset(OneWire) == ONEWIRE_FAILURE) return DS18B20_FAILURE;
     /* Select ROM number */
     OneWire_SelectWithPointer(OneWire, ROM);
     /* Copy scratchpad to EEPROM of DS18B20 */
