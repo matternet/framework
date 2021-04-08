@@ -35,7 +35,7 @@
 \endverbatim
  */
 #ifndef DS18B20_H
-#define DS18B20_H 100
+#define DS18B20_H
 
 /**
  * @addtogroup STM32Fxxx_HAL_Libraries
@@ -86,9 +86,8 @@
 /* Every onewire chip has different ROM code, but all the same chips has same family code */
 /* in case of DS18B20 this is 0x28 and this is first byte of ROM address */
 #define DS18B20_FAMILY_CODE				0x28
-
 /* DS18B20 Commands */
-#define DS18B20_CMD_ALARMSEARCH			0xEC
+#define DS18B20_CMD_ALARMSEARCH         0xEC
 #define DS18B20_CMD_CONVERTTEMP         0x44    /* Convert temperature */
 
 /* DS18B20 Resolution defines */
@@ -107,6 +106,7 @@
 #define DS18B20_DATA_LSB                0
 #define DS18B20_DATA_MSB                1
 
+#define DS18B20_USE_CRC 1
 /* CRC enabled */
 #ifdef DS18B20_USE_CRC	
 #define DS18B20_DATA_LEN				9
@@ -114,8 +114,19 @@
 #define DS18B20_DATA_LEN				2
 #endif
 
-#define DS18B20_MAX_TEMP 125
-#define DS18B20_MIN_TEMP (-55)
+/* DS18B20 Common Numbers */
+#define DS18B20_DATA_CRC_BYTE  8
+#define DS18B20_DATA_LSB       0
+#define DS18B20_DATA_MSB       1
+
+#define DS18B20_MAX_TEMP_DEG_C 125
+#define DS18B20_MIN_TEMP_DEG_C (-55)
+
+#define DS18B20_CONFIG_REGISTER_BYTE          4
+#define DS18B20_CONFIG_REGISTER_R0_R1_BITMASK 0x60
+#define DS18B20_CONFIG_REGISTER_RESERVED_BITS 5
+
+#define DS18B20_TEMP_SIGN_BITMASK             0x8000
 
 /**
  * @}
@@ -141,11 +152,12 @@ typedef enum {
  * @brief  DS18B0 Return Codes
  */
 typedef enum {
-    DEVICE_NOT_DS18B20             = -3,  /*!< Does not match DS18B20 Family Code */
+    DS18B20_USAGE_ERROR            = -4,  /*!< Function Usage Error, check parameters */
+    DEVICE_NOT_DS18B20             = -3,  /*!< Device does not match DS18B20 Family Code */
     DS18B20_CONVERSION_IN_PROGRESS = -2,  /*!< Sensor still processing information, line is low */
-    DS18B20_FAILURE                = -1, /*!< Usage Error, or general failure */
-    DS18B20_SUCCESS                =  0 /*!< DS18B20 function successful */
-} DS18B20Status;
+    DS18B20_FAILURE                = -1,  /*!< General operation failure, CRC Invalid */
+    DS18B20_SUCCESS                =  0   /*!< DS18B20 function successful */
+} DS18B20_Status;
 
 /**
  * @}
@@ -164,7 +176,7 @@ typedef enum {
  *         Entire ROM address is 8-bytes long
  * @return 1 if device is DS18B20 or 0 if not
  */
-uint8_t DS18B20_Start(OneWire_t* OneWireStruct, uint8_t* ROM);
+DS18B20_Status DS18B20_Start(OneWire_t* OneWireStruct, uint8_t* ROM);
 
 /**
  * @brief  Starts temperature conversion for all DS18B20 devices on specific onewire channel
@@ -172,7 +184,7 @@ uint8_t DS18B20_Start(OneWire_t* OneWireStruct, uint8_t* ROM);
  * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWire channel)
  * @return None
  */
-void DS18B20_StartAll(OneWire_t* OneWireStruct);
+DS18B20_Status DS18B20_StartAll(OneWire_t* OneWireStruct);
 
 /**
  * @brief  Reads temperature from DS18B20
@@ -217,7 +229,7 @@ uint8_t DS18B20_SetResolution(OneWire_t* OneWireStruct, uint8_t* ROM, DS18B20_Re
  *            - 0: Device is not DS18B20
  *            - > 0: Device is DS18B20
  */
-uint8_t DS18B20_Is(uint8_t* ROM);
+DS18B20_Status DS18B20_Is(uint8_t* ROM);
 
 /**
  * @brief  Sets high alarm temperature to specific DS18B20 sensor
