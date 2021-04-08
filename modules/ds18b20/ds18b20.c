@@ -263,7 +263,7 @@ DS18B20_Status DS18B20_SetResolution(OneWire_t* OneWire, uint8_t *ROM, DS18B20_R
             break;
         }
         default: {
-            return DS18B20_FAILURE;
+            return DS18B20_USAGE_ERROR;
             break;
         }
     }
