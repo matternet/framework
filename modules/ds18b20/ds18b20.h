@@ -7,7 +7,7 @@
  * @ide     Keil uVision
  * @license MIT
  * @brief   Library for interfacing DS18B20 temperature sensor from Dallas semiconductors.
- *	
+ *  
 \verbatim
    ----------------------------------------------------------------------
     Copyright (c) 2016 Tilen MAJERLE
@@ -80,16 +80,16 @@
 
 /* Every onewire chip has different ROM code, but all the same chips has same family code */
 /* in case of DS18B20 this is 0x28 and this is first byte of ROM address */
-#define DS18B20_FAMILY_CODE				0x28
+#define DS18B20_FAMILY_CODE             0x28
 /* DS18B20 Commands */
 #define DS18B20_CMD_ALARMSEARCH         0xEC
 #define DS18B20_CMD_CONVERTTEMP         0x44    /* Convert temperature */
 
 /* DS18B20 Resolution defines */
-#define DS18B20_DECIMAL_STEPS_12BIT		0.0625
-#define DS18B20_DECIMAL_STEPS_11BIT		0.125
-#define DS18B20_DECIMAL_STEPS_10BIT		0.25
-#define DS18B20_DECIMAL_STEPS_9BIT		0.5
+#define DS18B20_DECIMAL_STEPS_12BIT     0.0625
+#define DS18B20_DECIMAL_STEPS_11BIT     0.125
+#define DS18B20_DECIMAL_STEPS_10BIT     0.25
+#define DS18B20_DECIMAL_STEPS_9BIT      0.5
 
 #define DS18B20_READ_TIMEOUT_MS         2000  /* Large timeout in ms for any read. Max read time should be ~1000ms for 12bit resolution */
 
@@ -131,10 +131,10 @@
  * @brief  DS18B0 Resolutions available
  */
 typedef enum {
-	DS18B20_RESOLUTION_9BITS  = 9,  /*!< DS18B20 9 bits resolution */
-	DS18B20_RESOLUTION_10BITS = 10, /*!< DS18B20 10 bits resolution */
-	DS18B20_RESOLUTION_11BITS = 11, /*!< DS18B20 11 bits resolution */
-	DS18B20_RESOLUTION_12BITS = 12  /*!< DS18B20 12 bits resolution */
+    DS18B20_RESOLUTION_9BITS  = 9,  /*!< DS18B20 9 bits resolution */
+    DS18B20_RESOLUTION_10BITS = 10, /*!< DS18B20 10 bits resolution */
+    DS18B20_RESOLUTION_11BITS = 11, /*!< DS18B20 11 bits resolution */
+    DS18B20_RESOLUTION_12BITS = 12  /*!< DS18B20 12 bits resolution */
 } DS18B20_Resolution_t;
 
 /**
@@ -250,8 +250,8 @@ DS18B20_Status DS18B20_DisableAlarmTemperature(OneWire_t* OneWireStruct, uint8_t
  * @note   To get all devices on one onewire channel with alarm flag set, you can do this:
 \verbatim
 while (DS18B20_AlarmSearch(&OneWireStruct)) {
-	//Read device ID here 
-	//Print to user device by device
+    //Read device ID here 
+    //Print to user device by device
 }
 \endverbatim 
  * @return retval: see defintion of DS18B20_Status

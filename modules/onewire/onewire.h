@@ -33,15 +33,15 @@ extern "C" {
 #include <stdint.h>
 
 /* OneWire commands */
-#define ONEWIRE_CMD_RSCRATCHPAD			0xBE
-#define ONEWIRE_CMD_WSCRATCHPAD			0x4E
-#define ONEWIRE_CMD_CPYSCRATCHPAD		0x48
-#define ONEWIRE_CMD_RECEEPROM			0xB8
-#define ONEWIRE_CMD_RPWRSUPPLY			0xB4
-#define ONEWIRE_CMD_SEARCHROM			0xF0
-#define ONEWIRE_CMD_READROM				0x33
-#define ONEWIRE_CMD_MATCHROM			0x55
-#define ONEWIRE_CMD_SKIPROM				0xCC
+#define ONEWIRE_CMD_RSCRATCHPAD         0xBE
+#define ONEWIRE_CMD_WSCRATCHPAD         0x4E
+#define ONEWIRE_CMD_CPYSCRATCHPAD       0x48
+#define ONEWIRE_CMD_RECEEPROM           0xB8
+#define ONEWIRE_CMD_RPWRSUPPLY          0xB4
+#define ONEWIRE_CMD_SEARCHROM           0xF0
+#define ONEWIRE_CMD_READROM             0x33
+#define ONEWIRE_CMD_MATCHROM            0x55
+#define ONEWIRE_CMD_SKIPROM             0xCC
 
 /* OneWire Constants */
 #define ROM_DATA_SIZE_BYTES 8
@@ -80,11 +80,11 @@ typedef enum {
  * @note   Except ROM_NUM member, everything is fully private and should not be touched by user
  */
 typedef struct {
-	uint32_t PalLine;               		 /*!< GPIO port to be used for I/O functions */
-	uint8_t  LastDiscrepancy;       		 /*!< Search private */
-	uint8_t  LastFamilyDiscrepancy; 		 /*!< Search private */
-	uint8_t  LastDeviceFlag;        		 /*!< Search private */
-	uint8_t  ROM_NUM[ROM_DATA_SIZE_BYTES];   /*!< 8-bytes address of last search device */
+    uint32_t PalLine;                        /*!< GPIO port to be used for I/O functions */
+    uint8_t  LastDiscrepancy;                /*!< Search private */
+    uint8_t  LastFamilyDiscrepancy;          /*!< Search private */
+    uint8_t  LastDeviceFlag;                 /*!< Search private */
+    uint8_t  ROM_NUM[ROM_DATA_SIZE_BYTES];   /*!< 8-bytes address of last search device */
 } OneWire_t;
 
 /**
@@ -210,10 +210,10 @@ OneWireStatus OneWire_ResetSearch(OneWire_t* OneWireStruct);
 //...Initialization before
 status = OneWire_First(&OneWireStruct);
 while (status) {
-	//Save ROM number from device
-	OneWire_GetFullROM(ROM_Array_Pointer);
-	//Check for new device
-	status = OneWire_Next(&OneWireStruct);
+    //Save ROM number from device
+    OneWire_GetFullROM(ROM_Array_Pointer);
+    //Check for new device
+    status = OneWire_Next(&OneWireStruct);
 }
 \endcode
  * @param  *OneWireStruct: Pointer to an initialized @ref Onewire_t structure
