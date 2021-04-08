@@ -269,7 +269,15 @@ OneWireStatus OneWire_SelectWithPointer(OneWire_t* OneWireStruct, uint8_t* ROM);
  * @param  *rslt:  Pointer to store calculated CRC value 
  * @return retval: see defintion of OneWireStatus
  */
-OneWireStatus OneWire_CRC8(uint8_t* addr, uint8_t len, uint8_t* rslt);
+OneWireStatus OneWire_CalculateCRC8(uint8_t* addr, uint8_t len, uint8_t* rslt);
+
+/**
+ * @brief  Looks up 8-bit CRC for 1-wire devices, in an effort to save MIPS
+ * @param  *addr:  Pointer to 8-bit array of data to calculate CRC
+ * @param  len:    Number of bytes to check
+ * @return retval: 8-bit CRC value for given array
+ */
+uint8_t OneWire_LookupCRC8(uint8_t* addr, uint8_t len);
 
 /* C++ detection */
 #ifdef __cplusplus
