@@ -196,7 +196,7 @@ DS18B20_Status DS18B20_StartAll(OneWire_t* OneWireStruct);
  *            - 0: Device is not DS18B20 or conversion is not done yet or CRC failed
  *            - > 0: Temperature is read OK
  */
-uint8_t DS18B20_Read(OneWire_t* OneWireStruct, uint8_t* ROM, float* destination);
+DS18B20_Status DS18B20_Read(OneWire_t* OneWireStruct, uint8_t* ROM, float* destination);
 
 /**
  * @brief  Gets resolution for temperature conversion from DS18B20 device
@@ -207,7 +207,7 @@ uint8_t DS18B20_Read(OneWire_t* OneWireStruct, uint8_t* ROM, float* destination)
  *            - 0: Device is not DS18B20
  *            - 9 - 12: Resolution of DS18B20
  */
-uint8_t DS18B20_GetResolution(OneWire_t* OneWireStruct, uint8_t* ROM);
+DS18B20_Status DS18B20_GetResolution(OneWire_t* OneWireStruct, uint8_t* ROM, DS18B20_Resolution_t* resolution);
 
 /**
  * @brief  Sets resolution for specific DS18B20 device
@@ -219,7 +219,7 @@ uint8_t DS18B20_GetResolution(OneWire_t* OneWireStruct, uint8_t* ROM);
  *            - 0: Device is not DS18B20
  *            - > 0: Resolution set OK
  */
-uint8_t DS18B20_SetResolution(OneWire_t* OneWireStruct, uint8_t* ROM, DS18B20_Resolution_t resolution);
+DS18B20_Status DS18B20_SetResolution(OneWire_t* OneWireStruct, uint8_t* ROM, DS18B20_Resolution_t resolution);
 
 /**
  * @brief  Checks if device with specific ROM number is DS18B20
@@ -241,7 +241,7 @@ DS18B20_Status DS18B20_Is(uint8_t* ROM);
  *            - 0: Device is not DS18B20
  *            - > 0: High alarm set OK
  */
-uint8_t DS18B20_SetAlarmHighTemperature(OneWire_t* OneWireStruct, uint8_t* ROM, int8_t temp);
+DS18B20_Status DS18B20_SetAlarmHighTemperature(OneWire_t* OneWireStruct, uint8_t* ROM, int8_t temp);
 
 /**
  * @brief  Sets low alarm temperature to specific DS18B20 sensor
@@ -253,7 +253,7 @@ uint8_t DS18B20_SetAlarmHighTemperature(OneWire_t* OneWireStruct, uint8_t* ROM, 
  *            - 0: Device is not DS18B20
  *            - > 0: Low alarm set OK
  */
-uint8_t DS18B20_SetAlarmLowTemperature(OneWire_t* OneWireStruct, uint8_t* ROM, int8_t temp);
+DS18B20_Status DS18B20_SetAlarmLowTemperature(OneWire_t* OneWireStruct, uint8_t* ROM, int8_t temp);
 
 /**
  * @brief  Disables alarm temperature for specific DS18B20 sensor
@@ -264,7 +264,7 @@ uint8_t DS18B20_SetAlarmLowTemperature(OneWire_t* OneWireStruct, uint8_t* ROM, i
  *            - 0: Device is not DS18B20
  *            - > 0: Alarm disabled OK
  */
-uint8_t DS18B20_DisableAlarmTemperature(OneWire_t* OneWireStruct, uint8_t* ROM);
+DS18B20_Status DS18B20_DisableAlarmTemperature(OneWire_t* OneWireStruct, uint8_t* ROM);
 
 /**
  * @brief  Searches for devices with alarm flag set
@@ -281,7 +281,7 @@ while (DS18B20_AlarmSearch(&OneWireStruct)) {
 \endverbatim 
  * @return 1 if any device has flag, otherwise 0
  */
-uint8_t DS18B20_AlarmSearch(OneWire_t* OneWireStruct);
+DS18B20_Status DS18B20_AlarmSearch(OneWire_t* OneWireStruct);
 
 /**
  * @brief  Checks if all DS18B20 sensors are done with temperature conversion
@@ -290,7 +290,7 @@ uint8_t DS18B20_AlarmSearch(OneWire_t* OneWireStruct);
  *            - 0: Not all devices are done
  *            - > 0: All devices are done with conversion
  */
-uint8_t DS18B20_AllDone(OneWire_t* OneWireStruct);
+DS18B20_Status DS18B20_AllDone(OneWire_t* OneWireStruct);
 
 /**
  * @}

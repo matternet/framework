@@ -25,6 +25,16 @@
  */
 #include "ds18b20.h"
 
+/**
+ * @brief  Private function converts config register value to uint8_t resolution
+ * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWire channel)
+ * @return None
+ */
+uint8_t DS18B20_ConfigRegToResolution(uint8_t config_register){
+    return ((config_register & DS18B20_CONFIG_REGISTER_R0_R1_BITMASK) 
+        >> DS18B20_CONFIG_REGISTER_RESERVED_BITS) + 9;
+}
+
 DS18B20_Status DS18B20_Start(OneWire_t* OneWire, uint8_t *ROM) {
 	/* Check if device is DS18B20 */
     if (!OneWire || !ROM) return DS18B20_USAGE_ERROR;
@@ -51,7 +61,7 @@ DS18B20_Status DS18B20_StartAll(OneWire_t* OneWire) {
     return DS18B20_SUCCESS;
 }
 
-uint8_t DS18B20_Read(OneWire_t* OneWire, uint8_t *ROM, float *destination) {
+DS18B20_Status DS18B20_Read(OneWire_t* OneWire, uint8_t *ROM, float *destination) {
     if (!OneWire || !ROM || !destination) return DS18B20_USAGE_ERROR;
 
 	uint16_t temperature;
@@ -111,12 +121,14 @@ uint8_t DS18B20_Read(OneWire_t* OneWire, uint8_t *ROM, float *destination) {
 	}
 
 	/* Get sensor resolution */
-	resolution = ((data[4] & 0x60) >> 5) + 9;
-
+    resolution = DS18B20_ConfigRegToResolution(data[DS18B20_CONFIG_REGISTER_BYTE]);
 	
-	/* Store temperature integer digits and decimal digits */
-	digit = temperature >> 4;
-	digit |= ((temperature >> 8) & 0x7) << 4;
+
+    /* Measure temperature by first extracting the digit (non decimal) portion. */
+    /* Ignore all but 1 signed bit */
+    digit = temperature >> 4;
+    /* extract signed bit and 3 digit temp bits from MSB, put in appropriate power */
+    digit |= ((temperature >> 8) & 0x7) << 4;
 	
     /* Store decimal digits */
     /* Resolution may be either 9, 10, 11, or 12 bits.
@@ -163,7 +175,7 @@ uint8_t DS18B20_Read(OneWire_t* OneWire, uint8_t *ROM, float *destination) {
 	return DS18B20_SUCCESS;
 }
 
-uint8_t DS18B20_GetResolution(OneWire_t* OneWire, uint8_t *ROM) {
+DS18B20_Status DS18B20_GetResolution(OneWire_t* OneWire, uint8_t *ROM, DS18B20_Resolution_t* resolution) {
 	uint8_t conf_register = 0, temp = 0;
 	
 	if (DS18B20_Is(ROM)==DEVICE_NOT_DS18B20) {
@@ -187,13 +199,14 @@ uint8_t DS18B20_GetResolution(OneWire_t* OneWire, uint8_t *ROM) {
 	OneWire_ReadByte(OneWire, &conf_register);
 	
 	/* Return 9 - 12 value according to number of bits */
-	return ((conf_register & 0x60) >> 5) + 9;
+	*resolution = DS18B20_ConfigRegToResolution(conf_register);
+    return DS18B20_SUCCESS;
 }
 
-uint8_t DS18B20_SetResolution(OneWire_t* OneWire, uint8_t *ROM, DS18B20_Resolution_t resolution) {
+DS18B20_Status DS18B20_SetResolution(OneWire_t* OneWire, uint8_t *ROM, DS18B20_Resolution_t resolution) {
 	uint8_t trigger_register_hi, trigger_register_lo, conf_register, temp;
     if (DS18B20_Is(ROM)==DEVICE_NOT_DS18B20) {
-		return 0;
+		return DEVICE_NOT_DS18B20;
 	}
 	
 	/* Reset line */
@@ -221,21 +234,30 @@ uint8_t DS18B20_SetResolution(OneWire_t* OneWire, uint8_t *ROM, DS18B20_Resoluti
     1   0   11
     1   1   12
     ------------------------------------------
-    */
-	if (resolution == DS18B20_RESOLUTION_9BITS) {
-		conf_register &= ~(1 << DS18B20_RESOLUTION_R1);
-		conf_register &= ~(1 << DS18B20_RESOLUTION_R0);
-	} else if (resolution == DS18B20_RESOLUTION_10BITS) {
-		conf_register &= ~(1 << DS18B20_RESOLUTION_R1);
-		conf_register |= 1 << DS18B20_RESOLUTION_R0;
-	} else if (resolution == DS18B20_RESOLUTION_11BITS) {
-		conf_register |= 1 << DS18B20_RESOLUTION_R1;
-		conf_register &= ~(1 << DS18B20_RESOLUTION_R0);
-	} else if (resolution == DS18B20_RESOLUTION_12BITS) {
-		conf_register |= 1 << DS18B20_RESOLUTION_R1;
-		conf_register |= 1 << DS18B20_RESOLUTION_R0;
-	}
-	
+    */	
+    switch (resolution) {
+        case DS18B20_RESOLUTION_9BITS: {
+            conf_register &= ~(1 << DS18B20_RESOLUTION_R1);
+            conf_register &= ~(1 << DS18B20_RESOLUTION_R0);
+        } break;
+        case DS18B20_RESOLUTION_10BITS: {
+            conf_register &= ~(1 << DS18B20_RESOLUTION_R1);
+            conf_register |= 1 << DS18B20_RESOLUTION_R0;
+        } break;
+        case DS18B20_RESOLUTION_11BITS: {
+            conf_register |= 1 << DS18B20_RESOLUTION_R1;
+            conf_register &= ~(1 << DS18B20_RESOLUTION_R0);
+        } break;
+        case DS18B20_RESOLUTION_12BITS: {
+            conf_register |= 1 << DS18B20_RESOLUTION_R1;
+            conf_register |= 1 << DS18B20_RESOLUTION_R0;
+        } break;
+        default: {
+            return DS18B20_FAILURE;
+            break;
+        }
+    }
+
 	/* Reset line */
 	OneWire_Reset(OneWire);
 	/* Select ROM number */
@@ -255,10 +277,11 @@ uint8_t DS18B20_SetResolution(OneWire_t* OneWire, uint8_t *ROM, DS18B20_Resoluti
 	/* Copy scratchpad to EEPROM of DS18B20 */
 	OneWire_WriteByte(OneWire, ONEWIRE_CMD_CPYSCRATCHPAD);
 	
-	return 1;
+    return DS18B20_SUCCESS;
 }
 
 DS18B20_Status DS18B20_Is(uint8_t* ROM) {
+    if (!ROM) return DS18B20_USAGE_ERROR;
 	/* Checks if first byte is equal to DS18B20's family code */
 	if (*ROM != DS18B20_FAMILY_CODE) {
 		return DEVICE_NOT_DS18B20;
@@ -266,10 +289,10 @@ DS18B20_Status DS18B20_Is(uint8_t* ROM) {
 	return DS18B20_SUCCESS;
 }
 
-uint8_t DS18B20_SetAlarmLowTemperature(OneWire_t* OneWire, uint8_t *ROM, int8_t temp) {
+DS18B20_Status DS18B20_SetAlarmLowTemperature(OneWire_t* OneWire, uint8_t *ROM, int8_t temp) {
 	uint8_t trigger_register_lo, trigger_register_hi, conf_register, ignore;
 	if (DS18B20_Is(ROM)==DEVICE_NOT_DS18B20) {
-		return 0;
+		return DEVICE_NOT_DS18B20;
 	}
     if (temp > DS18B20_MAX_TEMP_DEG_C) {
         temp = DS18B20_MAX_TEMP_DEG_C;
@@ -313,10 +336,10 @@ uint8_t DS18B20_SetAlarmLowTemperature(OneWire_t* OneWire, uint8_t *ROM, int8_t 
 	/* Copy scratchpad to EEPROM of DS18B20 */
 	OneWire_WriteByte(OneWire, ONEWIRE_CMD_CPYSCRATCHPAD);
 	
-	return 1;
+    return DS18B20_SUCCESS;
 }
 
-uint8_t DS18B20_SetAlarmHighTemperature(OneWire_t* OneWire, uint8_t *ROM, int8_t temp) {
+DS18B20_Status DS18B20_SetAlarmHighTemperature(OneWire_t* OneWire, uint8_t *ROM, int8_t temp) {
     uint8_t trigger_register_lo, trigger_register_hi, conf_register, ignore;
 	if (DS18B20_Is(ROM)==DEVICE_NOT_DS18B20) {
 		return DEVICE_NOT_DS18B20;
@@ -363,10 +386,10 @@ uint8_t DS18B20_SetAlarmHighTemperature(OneWire_t* OneWire, uint8_t *ROM, int8_t
 	/* Copy scratchpad to EEPROM of DS18B20 */
 	OneWire_WriteByte(OneWire, ONEWIRE_CMD_CPYSCRATCHPAD);
 	
-	return 1;
+	return DS18B20_SUCCESS;
 }
 
-uint8_t DS18B20_DisableAlarmTemperature(OneWire_t* OneWire, uint8_t *ROM) {
+DS18B20_Status DS18B20_DisableAlarmTemperature(OneWire_t* OneWire, uint8_t *ROM) {
 	uint8_t trigger_register_lo, trigger_register_hi, conf_register, ignore;
 	if (DS18B20_Is(ROM)==DEVICE_NOT_DS18B20) {
 		return DEVICE_NOT_DS18B20;
@@ -408,15 +431,15 @@ uint8_t DS18B20_DisableAlarmTemperature(OneWire_t* OneWire, uint8_t *ROM) {
 	/* Copy scratchpad to EEPROM of DS18B20 */
 	OneWire_WriteByte(OneWire, ONEWIRE_CMD_CPYSCRATCHPAD);
 	
-	return 1;
+    return DS18B20_SUCCESS;
 }
 
-uint8_t DS18B20_AlarmSearch(OneWire_t* OneWire) {
+DS18B20_Status DS18B20_AlarmSearch(OneWire_t* OneWire) {
 	/* Start alarm search */
 	return OneWire_Search(OneWire, DS18B20_CMD_ALARMSEARCH);
 }
 
-uint8_t DS18B20_AllDone(OneWire_t* OneWire) {
+DS18B20_Status DS18B20_AllDone(OneWire_t* OneWire) {
 	/* If read bit is low, then device is not finished yet with calculation temperature */
     uint8_t is_conversion_done = 0;
     if (OneWire_ReadBit(OneWire, &is_conversion_done)){
