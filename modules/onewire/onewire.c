@@ -195,9 +195,7 @@ OneWireStatus OneWire_Search(OneWire_t* OneWireStruct, uint8_t command) {
         /* If presence pulse is not good after reset */
         if (OneWire_Reset(OneWireStruct)==ONEWIRE_FAILURE) {
             /* Reset the search */
-            OneWireStruct->LastDiscrepancy       = 0;
-            OneWireStruct->LastDeviceFlag        = 0;
-            OneWireStruct->LastFamilyDiscrepancy = 0;
+            OneWire_ResetSearch(OneWireStruct);
             return ONEWIRE_FAILURE;
         }
 
@@ -277,13 +275,14 @@ OneWireStatus OneWire_Search(OneWire_t* OneWireStruct, uint8_t command) {
 
     /* If no device found then reset counters so next 'search' will be like a first */
     if (!search_result || !OneWireStruct->ROM_NUM[0]) {
-        OneWireStruct->LastDiscrepancy       = 0;
-        OneWireStruct->LastDeviceFlag        = 0;
-        OneWireStruct->LastFamilyDiscrepancy = 0;
-        search_result                        = 0;
+        OneWire_ResetSearch(OneWireStruct);
+        search_result = 0;
     }
 
-    return search_result == ONEWIRE_SUCCESS;
+    if (search_result) {
+        return ONEWIRE_SUCCESS;
+    }
+    return ONEWIRE_FAILURE;
 }
 
 OneWireStatus OneWire_Verify(OneWire_t* OneWireStruct) {
@@ -325,7 +324,10 @@ OneWireStatus OneWire_Verify(OneWire_t* OneWireStruct) {
     OneWireStruct->LastFamilyDiscrepancy = lfd_backup;
 
     /* Return the result of the verify */
-    return rslt == ONEWIRE_SUCCESS;
+    if (rslt) {
+        return ONEWIRE_SUCCESS;
+    }
+    return ONEWIRE_FAILURE;
 }
 
 OneWireStatus OneWire_TargetSetup(OneWire_t* OneWireStruct, uint8_t family_code) {
