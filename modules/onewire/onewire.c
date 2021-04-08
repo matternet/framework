@@ -75,7 +75,10 @@ OneWireStatus OneWire_Reset(OneWire_t* OneWireStruct) {
     /* Complete reset pulse min time */
     OneWire_Delay(ONEWIRE_RX_MIN_RESET_PULSE_TIME_USEC);
     /* Return value of presence pulse, 0 = OK, 1 = ERROR */
-    return (presence_pulse == 0);
+    if (presence_pulse == 0){
+        return ONEWIRE_SUCCESS;
+    }
+    return ONEWIRE_FAILURE;
 }
 
 OneWireStatus OneWire_WriteBit(OneWire_t* OneWireStruct, uint8_t bit) {
