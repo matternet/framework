@@ -140,6 +140,7 @@ OneWireStatus OneWire_WriteByte(OneWire_t* OneWireStruct, uint8_t byte) {
 
 OneWireStatus OneWire_ReadByte(OneWire_t* OneWireStruct, uint8_t* ReadVal) {
     if (!OneWireStruct || !ReadVal) return ONEWIRE_FAILURE;    
+    *ReadVal = 0;
     uint8_t bitval = 0;
     /* Data is transferred LSb first */
     for (uint8_t i = 0; i < 8; i++) {
