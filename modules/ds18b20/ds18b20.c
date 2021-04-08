@@ -156,7 +156,7 @@ uint8_t DS18B20_Read(OneWire_t* OneWire, uint8_t *ROM, float *destination) {
 	*destination = decimal;
 	
 	/* Return 1, temperature valid */
-	return 1;
+	return DS18B20_SUCCESS;
 }
 
 uint8_t DS18B20_GetResolution(OneWire_t* OneWire, uint8_t *ROM) {
