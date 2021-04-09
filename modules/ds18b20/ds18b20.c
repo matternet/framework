@@ -25,7 +25,7 @@
  */
 
 #include "ds18b20.h"
-
+#include <stdbool.h>
 /**
  * @brief  Private function converts config register value to uint8_t resolution
  * @param  config_register: value of configuration register.
@@ -33,7 +33,7 @@
  */
 uint8_t DS18B20_ConfigRegToResolution(uint8_t config_register) {
     return ((config_register & DS18B20_CONFIG_REGISTER_R0_R1_BITMASK) 
-        >> DS18B20_CONFIG_REGISTER_RESERVED_BITS) + 9DS18B20_RESOLUTION_9BITS;
+        >> DS18B20_CONFIG_REGISTER_RESERVED_BITS) + DS18B20_RESOLUTION_9BITS;
 }
 
 DS18B20_Status DS18B20_Start(OneWire_t* OneWire, uint8_t *ROM) {
