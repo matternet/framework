@@ -17,6 +17,9 @@
  * |----------------------------------------------------------------------
  */
 
+/* includes to access HAL/PAL calls, need to access directly since abstraction for ChibiOS in framework is lackluster */
+#include <hal.h>                   // all encompasing hal.h include. includes everything related to hal that you would need.
+#include <modules/timing/timing.h> // need timing module for microsecond level bit-banging
 #include "onewire.h"
 
 // ONEWIRE ABSTRACTION HELPERS

@@ -23,6 +23,7 @@
  * | OTHER DEALINGS IN THE SOFTWARE.
  * |----------------------------------------------------------------------
  */
+
 #include "ds18b20.h"
 
 /**
@@ -32,7 +33,7 @@
  */
 uint8_t DS18B20_ConfigRegToResolution(uint8_t config_register) {
     return ((config_register & DS18B20_CONFIG_REGISTER_R0_R1_BITMASK) 
-        >> DS18B20_CONFIG_REGISTER_RESERVED_BITS) + 9;
+        >> DS18B20_CONFIG_REGISTER_RESERVED_BITS) + 9DS18B20_RESOLUTION_9BITS;
 }
 
 DS18B20_Status DS18B20_Start(OneWire_t* OneWire, uint8_t *ROM) {
@@ -99,8 +100,8 @@ DS18B20_Status DS18B20_Read(OneWire_t* OneWire, uint8_t *ROM, float *destination
     }
     
     /* Calculate CRC */
-    // OneWire_CRC8(data, 8, &crc);
-    crc = OneWire_LookupCRC8(data,8);
+    // OneWire_CRC8(data, ROM_DATA_SIZE_BYTES, &crc);
+    crc = OneWire_LookupCRC8(data,ROM_DATA_SIZE_BYTES);
 
     /* Check if CRC is ok */
     if (crc != data[DS18B20_READ_CRC_BYTE]) {
@@ -109,7 +110,7 @@ DS18B20_Status DS18B20_Read(OneWire_t* OneWire, uint8_t *ROM, float *destination
     }
     
     /* First two bytes of scratchpad are temperature values */
-    temperature = data[DS18B20_DATA_LSB] | (data[DS18B20_DATA_MSB] << DS18B20_READ_CRC_BYTE);
+    temperature = data[DS18B20_DATA_LSB] | (data[DS18B20_DATA_MSB] << 8);
 
     /* Reset line */
     if (OneWire_Reset(OneWire) == ONEWIRE_FAILURE) return DS18B20_FAILURE;
@@ -124,7 +125,6 @@ DS18B20_Status DS18B20_Read(OneWire_t* OneWire, uint8_t *ROM, float *destination
     /* Get sensor resolution */
     resolution = DS18B20_ConfigRegToResolution(data[DS18B20_CONFIG_REGISTER_BYTE]);
     
-
     /* Measure temperature by first extracting the digit (non decimal) portion. */
     /* Ignore all but 1 signed bit */
     digit = temperature >> 4;
@@ -160,9 +160,7 @@ DS18B20_Status DS18B20_Read(OneWire_t* OneWire, uint8_t *ROM, float *destination
             break;
         }
         default: {
-            decimal = 0xFF;
-            digit = 0;
-            break;
+            return DS18B20_USAGE_ERROR;
         }
     }
     
@@ -264,7 +262,6 @@ DS18B20_Status DS18B20_SetResolution(OneWire_t* OneWire, uint8_t *ROM, DS18B20_R
         }
         default: {
             return DS18B20_USAGE_ERROR;
-            break;
         }
     }
 

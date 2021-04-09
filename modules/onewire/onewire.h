@@ -27,9 +27,6 @@
 extern "C" {
 #endif
 
-// includes to access HAL/PAL calls, need to access directly since abstraction for ChibiOS in framework is lackluster
-#include <hal.h>                   // all encompasing hal.h include. includes everything related to hal that you would need.
-#include <modules/timing/timing.h> // need timing module for microsecond level bit-banging
 #include <stdint.h>
 
 /* OneWire commands */
@@ -263,7 +260,8 @@ OneWireStatus OneWire_Select(OneWire_t* OneWireStruct, uint8_t* addr);
 OneWireStatus OneWire_SelectWithPointer(OneWire_t* OneWireStruct, uint8_t* ROM);
 
 /**
- * @brief  Calculates 8-bit CRC for 1-wire devices
+ * @brief  Calculates 8-bit CRC for 1-wire devices. 
+ * @note   CRC = X^8 + X^5 + X^4 + 1
  * @param  *addr:  Pointer to 8-bit array of data to calculate CRC
  * @param  len:    Number of bytes to check
  * @param  *rslt:  Pointer to store calculated CRC value 
@@ -273,6 +271,7 @@ OneWireStatus OneWire_CalculateCRC8(uint8_t* addr, uint8_t len, uint8_t* rslt);
 
 /**
  * @brief  Looks up 8-bit CRC for 1-wire devices, in an effort to save MIPS
+ * @note   CRC = X^8 + X^5 + X^4 + 1
  * @param  *addr:  Pointer to 8-bit array of data to calculate CRC
  * @param  len:    Number of bytes to check
  * @return retval: 8-bit CRC value for given array
