@@ -37,7 +37,7 @@ uint8_t DS18B20_ConfigRegToResolution(uint8_t config_register) {
 
 DS18B20_Status DS18B20_Start(OneWire_t* OneWire, uint8_t *ROM) {
     if (!OneWire || !ROM) return DS18B20_USAGE_ERROR;
-    if (DS18B20_Is(ROM)==DEVICE_NOT_DS18B20) return DEVICE_NOT_DS18B20;
+    if (DS18B20_Is(ROM)==DS18B20_INVALID_DEVICE) return DS18B20_INVALID_DEVICE;
     
     /* Reset line */
     if (OneWire_Reset(OneWire) == ONEWIRE_FAILURE) return DS18B20_FAILURE;
@@ -73,8 +73,8 @@ DS18B20_Status DS18B20_Read(OneWire_t* OneWire, uint8_t *ROM, float *destination
     uint8_t crc;
     
     /* Check if device is DS18B20 */
-    if (DS18B20_Is(ROM)==DEVICE_NOT_DS18B20) {
-        return DEVICE_NOT_DS18B20;
+    if (DS18B20_Is(ROM)==DS18B20_INVALID_DEVICE) {
+        return DS18B20_INVALID_DEVICE;
     }
     
     /* Check if line is released, if it is, then conversion is complete */
@@ -182,7 +182,7 @@ DS18B20_Status DS18B20_Read(OneWire_t* OneWire, uint8_t *ROM, float *destination
 
 DS18B20_Status DS18B20_GetResolution(OneWire_t* OneWire, uint8_t *ROM, DS18B20_Resolution_t* resolution) {
     if (!OneWire || !ROM || !resolution) return DS18B20_USAGE_ERROR;
-    if (DS18B20_Is(ROM)==DEVICE_NOT_DS18B20) return DEVICE_NOT_DS18B20;
+    if (DS18B20_Is(ROM)==DS18B20_INVALID_DEVICE) return DS18B20_INVALID_DEVICE;
     
     uint8_t conf_register = 0, temp = 0;
     
@@ -211,8 +211,8 @@ DS18B20_Status DS18B20_SetResolution(OneWire_t* OneWire, uint8_t *ROM, DS18B20_R
     if (!OneWire || !ROM ) return DS18B20_USAGE_ERROR;
 
     uint8_t trigger_register_hi, trigger_register_lo, conf_register, temp;
-    if (DS18B20_Is(ROM)==DEVICE_NOT_DS18B20) {
-        return DEVICE_NOT_DS18B20;
+    if (DS18B20_Is(ROM)==DS18B20_INVALID_DEVICE) {
+        return DS18B20_INVALID_DEVICE;
     }
     
     /* Reset line */
@@ -294,7 +294,7 @@ DS18B20_Status DS18B20_Is(uint8_t* ROM) {
     if (!ROM) return DS18B20_USAGE_ERROR;
     /* Checks if first byte is equal to DS18B20's family code */
     if (*ROM != DS18B20_FAMILY_CODE) {
-        return DEVICE_NOT_DS18B20;
+        return DS18B20_INVALID_DEVICE;
     }
     return DS18B20_SUCCESS;
 }
@@ -303,8 +303,8 @@ DS18B20_Status DS18B20_SetAlarmLowTemperature(OneWire_t* OneWire, uint8_t *ROM, 
     if (!OneWire || !ROM ) return DS18B20_USAGE_ERROR;
 
     uint8_t trigger_register_lo, trigger_register_hi, conf_register, ignore;
-    if (DS18B20_Is(ROM)==DEVICE_NOT_DS18B20) {
-        return DEVICE_NOT_DS18B20;
+    if (DS18B20_Is(ROM)==DS18B20_INVALID_DEVICE) {
+        return DS18B20_INVALID_DEVICE;
     }
     if (temp > DS18B20_MAX_TEMP_DEG_C) {
         temp = DS18B20_MAX_TEMP_DEG_C;
@@ -353,7 +353,7 @@ DS18B20_Status DS18B20_SetAlarmLowTemperature(OneWire_t* OneWire, uint8_t *ROM, 
 
 DS18B20_Status DS18B20_SetAlarmHighTemperature(OneWire_t* OneWire, uint8_t *ROM, int8_t temp) {
     if (!OneWire || !ROM) return DS18B20_USAGE_ERROR;
-    if (DS18B20_Is(ROM)==DEVICE_NOT_DS18B20) return DEVICE_NOT_DS18B20;
+    if (DS18B20_Is(ROM)==DS18B20_INVALID_DEVICE) return DS18B20_INVALID_DEVICE;
 
     uint8_t trigger_register_lo, trigger_register_hi, conf_register, ignore;
     
@@ -404,7 +404,7 @@ DS18B20_Status DS18B20_SetAlarmHighTemperature(OneWire_t* OneWire, uint8_t *ROM,
 
 DS18B20_Status DS18B20_DisableAlarmTemperature(OneWire_t* OneWire, uint8_t *ROM) {
     if (!OneWire || !ROM) return DS18B20_USAGE_ERROR;
-    if (DS18B20_Is(ROM)==DEVICE_NOT_DS18B20) return DEVICE_NOT_DS18B20;
+    if (DS18B20_Is(ROM)==DS18B20_INVALID_DEVICE) return DS18B20_INVALID_DEVICE;
     
     uint8_t trigger_register_lo, trigger_register_hi, conf_register, ignore;
     
