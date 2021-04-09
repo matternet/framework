@@ -27,8 +27,8 @@
 
 /**
  * @brief  Private function converts config register value to uint8_t resolution
- * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWire channel)
- * @return None
+ * @param  config_register: value of configuration register.
+ * @return Resolution in bits: 9, 10, 11, or 12 
  */
 uint8_t DS18B20_ConfigRegToResolution(uint8_t config_register) {
     return ((config_register & DS18B20_CONFIG_REGISTER_R0_R1_BITMASK) 

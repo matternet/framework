@@ -142,10 +142,10 @@ typedef enum {
  */
 typedef enum {
     DS18B20_USAGE_ERROR            = -5,  /*!< Function Usage Error, check parameters */
-    DEVICE_NOT_DS18B20             = -4,  /*!< Device does not match DS18B20 Family Code */
-    DS18B20_CONVERSION_IN_PROGRESS = -2,  /*!< Sensor still processing information, line is low */
+    DS18B20_INVALID_DEVICE         = -4,  /*!< Device does not match DS18B20 Family Code */
     DS18B20_FAILURE                = -1,  /*!< General operation failure, CRC Invalid */
-    DS18B20_SUCCESS                =  0   /*!< DS18B20 function successful */
+    DS18B20_SUCCESS                =  0,  /*!< DS18B20 function successful */
+    DS18B20_CONVERSION_IN_PROGRESS =  1,  /*!< Sensor still processing information, line is low */
 } DS18B20_Status;
 
 /**
@@ -244,9 +244,6 @@ DS18B20_Status DS18B20_DisableAlarmTemperature(OneWire_t* OneWireStruct, uint8_t
 /**
  * @brief  Searches for devices with alarm flag set
  * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWire channel)
- * @return Alarm search status
- *            - 0: No device found with alarm flag set
- *            - > 0: Device is found with alarm flag
  * @note   To get all devices on one onewire channel with alarm flag set, you can do this:
 \verbatim
 while (DS18B20_AlarmSearch(&OneWireStruct)) {
