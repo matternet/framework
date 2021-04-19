@@ -19,7 +19,6 @@
 
 #ifdef UNIT_TEST
 #include "timing.h"
-#include <stdio.h>
 #else
 #include <modules/timing/timing.h>
 #endif // UNIT_TEST
