@@ -144,11 +144,11 @@ typedef enum {
  * @brief  DS18B0 Return Codes
  */
 typedef enum {
-    DS18B20_USAGE_ERROR            = -5,  /*!< Function Usage Error, check parameters */
-    DS18B20_INVALID_DEVICE         = -4,  /*!< Device does not match DS18B20 Family Code */
+    DS18B20_USAGE_ERROR            = -4,  /*!< Function Usage Error, check parameters */
+    DS18B20_INVALID_DEVICE         = -3,  /*!< Device does not match DS18B20 Family Code */
+    DS18B20_CONVERSION_IN_PROGRESS = -2,  /*!< Sensor still processing information, line is low */
     DS18B20_FAILURE                = -1,  /*!< General operation failure, CRC Invalid */
     DS18B20_SUCCESS                =  0,  /*!< DS18B20 function successful */
-    DS18B20_CONVERSION_IN_PROGRESS =  1,  /*!< Sensor still processing information, line is low */
 } DS18B20_Status;
 
 /**
