@@ -272,7 +272,7 @@ OneWireStatus OneWire_CalculateCRC8(uint8_t* addr, uint8_t len, uint8_t* rslt);
  * @note   CRC = X^8 + X^5 + X^4 + 1
  * @param  *addr:  Pointer to 8-bit array of data to calculate CRC
  * @param  len:    Number of bytes to check
- * @return retval: 8-bit CRC value for given array
+ * @return retval: 8-bit CRC value for given array, or ONEWIRE_FAILURE on usage error
  */
 uint8_t OneWire_LookupCRC8(uint8_t* addr, uint8_t len);
 
