@@ -68,7 +68,11 @@
 \endverbatim
  */
 
+#ifdef UNIT_TEST
+#include "onewire.h"
+#else
 #include <modules/onewire/onewire.h>
+#endif // UNIT_TEST
 
 /**
  * @defgroup DS18B20_Macros

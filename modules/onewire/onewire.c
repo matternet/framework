@@ -17,9 +17,15 @@
  * |----------------------------------------------------------------------
  */
 
+#ifdef UNIT_TEST
+#include "timing.h"
+#include <stdio.h>
+#else
+#include <modules/timing/timing.h>
+#endif // UNIT_TEST
+
 /* includes to access HAL/PAL calls, need to access directly since abstraction for ChibiOS in framework is lackluster */
-#include <hal.h>                   // all encompasing hal.h include. includes everything related to hal that you would need.
-#include <modules/timing/timing.h> // need timing module for microsecond level bit-banging
+#include <hal.h>
 #include "onewire.h"
 
 // ONEWIRE ABSTRACTION HELPERS
@@ -261,7 +267,6 @@ OneWireStatus OneWire_Search(OneWire_t* OneWireStruct, uint8_t command) {
             }
         /* Loop until through all ROM bytes 0-7 */
         } while (rom_byte_number < ROM_DATA_SIZE_BYTES);
-
         /* If the search was successful then */
         if (!(id_bit_number <= ROM_DATA_SIZE_BITS)) {
             /* Search successful so set LastDiscrepancy, LastDeviceFlag, search_result */
@@ -385,15 +390,6 @@ OneWireStatus OneWire_Select(OneWire_t* OneWireStruct, uint8_t* addr) {
     return ONEWIRE_SUCCESS;
 }
 
-OneWireStatus OneWire_SelectWithPointer(OneWire_t* OneWireStruct, uint8_t* ROM) {
-    if (!OneWireStruct || !ROM) return ONEWIRE_FAILURE;
-    OneWire_WriteByte(OneWireStruct, ONEWIRE_CMD_MATCHROM);
-    for (uint8_t i = 0; i < ROM_DATA_SIZE_BYTES; i++) {
-        OneWire_WriteByte(OneWireStruct, ROM[i]);
-    }   
-    return ONEWIRE_SUCCESS;
-}
-
 OneWireStatus OneWire_CalculateCRC8(uint8_t *addr, uint8_t len, uint8_t* rslt) {
     if (!addr) return ONEWIRE_FAILURE;
 
@@ -416,6 +412,8 @@ OneWireStatus OneWire_CalculateCRC8(uint8_t *addr, uint8_t len, uint8_t* rslt) {
 }
 
 uint8_t OneWire_LookupCRC8(uint8_t *data, uint8_t len) {
+    if (!data) return ONEWIRE_FAILURE;
+
     static uint8_t crc88540_table[256] = {
         0x0, 0x5e, 0xbc, 0xe2, 0x61, 0x3f, 0xdd, 0x83, 0xc2, 0x9c, 0x7e, 0x20, 0xa3, 0xfd, 0x1f, 0x41, 
         0x9d, 0xc3, 0x21, 0x7f, 0xfc, 0xa2, 0x40, 0x1e, 0x5f, 0x1, 0xe3, 0xbd, 0x3e, 0x60, 0x82, 0xdc, 
@@ -434,6 +432,7 @@ uint8_t OneWire_LookupCRC8(uint8_t *data, uint8_t len) {
         0xe9, 0xb7, 0x55, 0xb, 0x88, 0xd6, 0x34, 0x6a, 0x2b, 0x75, 0x97, 0xc9, 0x4a, 0x14, 0xf6, 0xa8, 
         0x74, 0x2a, 0xc8, 0x96, 0x15, 0x4b, 0xa9, 0xf7, 0xb6, 0xe8, 0xa, 0x54, 0xd7, 0x89, 0x6b, 0x35,
     };
+
     uint8_t result = 0; 
     while(len--) {
         result = crc88540_table[result ^ *data++];
