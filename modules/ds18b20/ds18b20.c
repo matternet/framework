@@ -26,6 +26,7 @@
 
 #include "ds18b20.h"
 #include <stdbool.h>
+
 /**
  * @brief  Private function converts config register value to uint8_t resolution
  * @param  config_register: value of configuration register.
@@ -453,12 +454,13 @@ DS18B20_Status DS18B20_AlarmSearch(OneWire_t* OneWire) {
 
 DS18B20_Status DS18B20_AllDone(OneWire_t* OneWire) {
     if (!OneWire) return DS18B20_USAGE_ERROR;
+    uint8_t line = 0;
+    OneWire_ReadBit(OneWire, &line);
     /* If read bit is low, then device is not finished yet with calculation temperature */
-    uint8_t is_conversion_done = 0;
-    if (OneWire_ReadBit(OneWire, &is_conversion_done)){
+    if (line == 1){
         return DS18B20_SUCCESS;
     }
-    return DS18B20_FAILURE;
+    return DS18B20_CONVERSION_IN_PROGRESS;
 }
 
 

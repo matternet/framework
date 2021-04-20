@@ -57,8 +57,8 @@ extern "C" {
 
 /* General OneWire return codes */
 typedef enum {
-    ONEWIRE_FAILURE          =  0, // Error: Usage / Operation Failure.
-    ONEWIRE_SUCCESS          =  1  // Operation Successful
+    ONEWIRE_FAILURE          =  -1, // Error: Usage / Operation Failure.
+    ONEWIRE_SUCCESS          =   0  // Operation Successful
 } OneWireStatus;
 
 /**

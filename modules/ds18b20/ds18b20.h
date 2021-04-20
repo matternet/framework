@@ -193,6 +193,7 @@ DS18B20_Status DS18B20_Read(OneWire_t* OneWireStruct, uint8_t* ROM, float* desti
  * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWire channel)
  * @param  *ROM: Pointer to first byte of ROM address for desired DS12B80 device.
  *         Entire ROM address is 8-bytes long
+ * @param  resolution: DS18B20_Resolution_t type describing its resolution
  * @return retval: see defintion of DS18B20_Status
  */
 DS18B20_Status DS18B20_GetResolution(OneWire_t* OneWireStruct, uint8_t* ROM, DS18B20_Resolution_t* resolution);
