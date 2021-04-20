@@ -76,7 +76,7 @@ typedef enum {
  * @note   There are three advanced search variations using the same state information, namely LastDiscrepancy, LastFamilyDiscrepancy, LastDeviceFlag, and ROM_NO.
  * @note   These variations allow specific family types to be targeted or skipped and device present verification 
  * @note   See https://www.maximintegrated.com/en/design/technical-documents/app-notes/1/187.html for more info.
- * @note   All members except ROM_NUM member is fully private and should not be touched by user.
+ * @note   All members except ROM_NUM member are fully private and should not be touched by user.
 
  */
 typedef struct {
