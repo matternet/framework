@@ -17,8 +17,6 @@
  * |----------------------------------------------------------------------
  */
 
-
-
 #ifndef ONEWIRE_H
 #define ONEWIRE_H
 
@@ -59,8 +57,8 @@ extern "C" {
 
 /* General OneWire return codes */
 typedef enum {
-    ONEWIRE_FAILURE          =  0, // Error: Usage / Operation Failure.
-    ONEWIRE_SUCCESS          =  1  // Operation Successful
+    ONEWIRE_FAILURE          =  -1, // Error: Usage / Operation Failure.
+    ONEWIRE_SUCCESS          =   0  // Operation Successful
 } OneWireStatus;
 
 /**
@@ -75,7 +73,11 @@ typedef enum {
 
 /**
  * @brief  OneWire working struct
- * @note   Except ROM_NUM member, everything is fully private and should not be touched by user
+ * @note   There are three advanced search variations using the same state information, namely LastDiscrepancy, LastFamilyDiscrepancy, LastDeviceFlag, and ROM_NO.
+ * @note   These variations allow specific family types to be targeted or skipped and device present verification 
+ * @note   See https://www.maximintegrated.com/en/design/technical-documents/app-notes/1/187.html for more info.
+ * @note   All members except ROM_NUM member are fully private and should not be touched by user.
+
  */
 typedef struct {
     uint32_t PalLine;                        /*!< GPIO port to be used for I/O functions */
@@ -95,7 +97,6 @@ typedef struct {
  * @{
  */
 
-/* OneWire delay */
 /**
  * @brief  Sleep for time_us microseconds
  * @note   Blocking sleep function. Seems to be faster/more accurate than chThdSleepMicroseconds()
@@ -257,14 +258,6 @@ OneWireStatus OneWire_GetFullROM(OneWire_t* OneWireStruct, uint8_t *firstIndex);
 OneWireStatus OneWire_Select(OneWire_t* OneWireStruct, uint8_t* addr);
 
 /**
- * @brief  Selects specific slave on bus with pointer address
- * @param  *OneWireStruct: Pointer to an initialized @ref Onewire_t structure
- * @param  *ROM: Pointer to first byte of ROM address
- * @return retval: see defintion of OneWireStatus
- */
-OneWireStatus OneWire_SelectWithPointer(OneWire_t* OneWireStruct, uint8_t* ROM);
-
-/**
  * @brief  Calculates 8-bit CRC for 1-wire devices. 
  * @note   CRC = X^8 + X^5 + X^4 + 1
  * @param  *addr:  Pointer to 8-bit array of data to calculate CRC
@@ -279,9 +272,32 @@ OneWireStatus OneWire_CalculateCRC8(uint8_t* addr, uint8_t len, uint8_t* rslt);
  * @note   CRC = X^8 + X^5 + X^4 + 1
  * @param  *addr:  Pointer to 8-bit array of data to calculate CRC
  * @param  len:    Number of bytes to check
- * @return retval: 8-bit CRC value for given array
+ * @return retval: 8-bit CRC value for given array, or ONEWIRE_FAILURE on usage error
  */
 uint8_t OneWire_LookupCRC8(uint8_t* addr, uint8_t len);
+
+/* Advanced Search Variations */
+
+/**
+ * @brief  Preset the search state to first find a particular family type
+ * @param  *ROM: Pointer to first byte of ROM address
+ * @return retval: see definition of OneWireStatus
+ */
+OneWireStatus OneWire_TargetSetup(OneWire_t* OneWireStruct, uint8_t family_code);
+
+/**
+ * @brief  Verify if a device with a known ROM is connected to onewire
+ * @param  *OneWireStruct: Pointer to an initialized @ref Onewire_t structure
+ * @return retval: see defintion of OneWireStatus
+ */
+OneWireStatus OneWire_Verify(OneWire_t* OneWireStruct);
+
+/**
+ * @brief  Sets the search state to skip all of the devices that have the family code that was found in the previous search.
+ * @param  *OneWireStruct: Pointer to an initialized @ref Onewire_t structure
+ * @return retval: see defintion of OneWireStatus
+ */
+OneWireStatus OneWire_FamilySkipSetup(OneWire_t* OneWireStruct);
 
 /* C++ detection */
 #ifdef __cplusplus

@@ -68,7 +68,11 @@
 \endverbatim
  */
 
+#ifdef UNIT_TEST
+#include "onewire.h"
+#else
 #include <modules/onewire/onewire.h>
+#endif // UNIT_TEST
 
 /**
  * @defgroup DS18B20_Macros
@@ -140,11 +144,11 @@ typedef enum {
  * @brief  DS18B0 Return Codes
  */
 typedef enum {
-    DS18B20_USAGE_ERROR            = -5,  /*!< Function Usage Error, check parameters */
-    DS18B20_INVALID_DEVICE         = -4,  /*!< Device does not match DS18B20 Family Code */
+    DS18B20_USAGE_ERROR            = -4,  /*!< Function Usage Error, check parameters */
+    DS18B20_INVALID_DEVICE         = -3,  /*!< Device does not match DS18B20 Family Code */
+    DS18B20_CONVERSION_IN_PROGRESS = -2,  /*!< Sensor still processing information, line is low */
     DS18B20_FAILURE                = -1,  /*!< General operation failure, CRC Invalid */
     DS18B20_SUCCESS                =  0,  /*!< DS18B20 function successful */
-    DS18B20_CONVERSION_IN_PROGRESS =  1,  /*!< Sensor still processing information, line is low */
 } DS18B20_Status;
 
 /**
@@ -189,6 +193,7 @@ DS18B20_Status DS18B20_Read(OneWire_t* OneWireStruct, uint8_t* ROM, float* desti
  * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWire channel)
  * @param  *ROM: Pointer to first byte of ROM address for desired DS12B80 device.
  *         Entire ROM address is 8-bytes long
+ * @param  resolution: DS18B20_Resolution_t type describing its resolution
  * @return retval: see defintion of DS18B20_Status
  */
 DS18B20_Status DS18B20_GetResolution(OneWire_t* OneWireStruct, uint8_t* ROM, DS18B20_Resolution_t* resolution);
