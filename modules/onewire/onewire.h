@@ -25,6 +25,7 @@
 extern "C" {
 #endif
 
+#include <modules/temp_sensor/temp_sensor.h>
 #include <stdint.h>
 
 /* OneWire commands */
@@ -136,6 +137,13 @@ OneWireStatus OneWire_Input(OneWire_t* OneWireStruct);
  * @return retval: see defintion of OneWireStatus
  */
 OneWireStatus OneWire_Output(OneWire_t* OneWireStruct);
+
+/**
+ * @brief  Wrapper init function to be used with abstraction temp sensor class;
+ * @param  temp_sensor_t: abstract class for temp sensor, holds information for init.
+ * @return retval: see defintion of OneWireStatus
+ */
+bool OneWire_Wrapper_Init(temp_sensor_t);
 
 /**
  * @brief  Initializes OneWire struct and set GPIO port.

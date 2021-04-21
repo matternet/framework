@@ -59,6 +59,14 @@ OneWireStatus OneWire_Output(OneWire_t* OneWireStruct) {
 
 // ONEWIRE IMPLEMENTATION
 
+OneWireStatus OneWire_Wrapper_Init(temp_sensor_t){
+    uint8_t status = OneWire_Init(temp_sensor_t.p_onewire_struct, temp_sensor_t.onewire_pal_line);
+    if (status == ONEWIRE_FAILURE){
+        return 0;
+    }
+    return 1;
+}
+
 OneWireStatus OneWire_Init(OneWire_t* OneWireStruct, uint32_t PalLine) {
     if (!OneWireStruct) return ONEWIRE_FAILURE;
     OneWireStruct->PalLine = PalLine;
