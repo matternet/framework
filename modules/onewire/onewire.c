@@ -18,6 +18,7 @@
  */
 
 #ifdef UNIT_TEST
+#include <stdio.h>
 #include "timing.h"
 #else
 #include <modules/timing/timing.h>
@@ -59,18 +60,21 @@ OneWireStatus OneWire_Output(OneWire_t* OneWireStruct) {
 
 // ONEWIRE IMPLEMENTATION
 
-OneWireStatus OneWire_Wrapper_Init(temp_sensor_t){
-    uint8_t status = OneWire_Init(temp_sensor_t.p_onewire_struct, temp_sensor_t.onewire_pal_line);
-    if (status == ONEWIRE_FAILURE){
-        return 0;
-    }
-    return 1;
-}
-
 OneWireStatus OneWire_Init(OneWire_t* OneWireStruct, uint32_t PalLine) {
     if (!OneWireStruct) return ONEWIRE_FAILURE;
     OneWireStruct->PalLine = PalLine;
     return ONEWIRE_SUCCESS;
+}
+
+temp_sensor_status_t OneWire_System_Init(temp_config_t* temp_config){
+    if (!temp_config)                    return TEMP_SENSOR_USAGE_ERROR;
+    if (!temp_config->p_one_wire_struct) return TEMP_SENSOR_USAGE_ERROR;
+    /* set the pal line, try to get the ROM */
+    OneWire_Init(temp_config->p_one_wire_struct, temp_config->one_wire_pal_line);
+    if (OneWire_First(temp_config->p_one_wire_struct) == ONEWIRE_SUCCESS){
+        return TEMP_SENSOR_SUCCESS;
+    }
+    return TEMP_SENSOR_FAILURE;
 }
 
 OneWireStatus OneWire_Reset(OneWire_t* OneWireStruct) {

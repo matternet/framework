@@ -72,6 +72,7 @@
 #include "onewire.h"
 #else
 #include <modules/onewire/onewire.h>
+#include <../temp_sensor/temp_sensor.h>
 #endif // UNIT_TEST
 
 /**
@@ -110,6 +111,8 @@
 #define DS18B20_USE_CRC 1
 
 /* DS18B20 Common Numbers */
+#define DS18B20_MAX_CONVERSION_TIME_MS 2000
+
 #define DS18B20_DATA_LSB       0
 #define DS18B20_DATA_MSB       1
 
@@ -144,7 +147,8 @@ typedef enum {
  * @brief  DS18B0 Return Codes
  */
 typedef enum {
-    DS18B20_USAGE_ERROR            = -4,  /*!< Function Usage Error, check parameters */
+    DS18B20_USAGE_ERROR            = -5,  /*!< Function Usage Error, check parameters */
+    DS18B20_TIMEOUT                = -4,  /*!< Timeout reached as known in the #define */
     DS18B20_INVALID_DEVICE         = -3,  /*!< Device does not match DS18B20 Family Code */
     DS18B20_CONVERSION_IN_PROGRESS = -2,  /*!< Sensor still processing information, line is low */
     DS18B20_FAILURE                = -1,  /*!< General operation failure, CRC Invalid */
@@ -169,6 +173,14 @@ typedef enum {
  * @return retval: see defintion of DS18B20_Status
  */
 DS18B20_Status DS18B20_Start(OneWire_t* OneWireStruct, uint8_t* ROM);
+
+/**
+ * @brief  Starts the conversion process AND modifies value of p_temp_deg_c with measured temperature.
+ * @param  *temp_config : address of temp_config struct, with an initialized onewire struct
+ * @param  *p_temp_deg_c: address of float to store measured temperature
+ * @return retval: see defintion of temp_sensor_status_t
+ */
+temp_sensor_status_t DS18B20_Wrapper_Read(temp_config_t* temp_config, float* p_temp_deg_c); 
 
 /**
  * @brief  Starts temperature conversion for all DS18B20 devices on specific onewire channel

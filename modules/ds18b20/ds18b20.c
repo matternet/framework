@@ -27,6 +27,12 @@
 #include "ds18b20.h"
 #include <stdbool.h>
 
+#ifdef UNIT_TEST
+#include "timing.h"
+#else
+#include <modules/timing/timing.h>
+#endif // UNIT_TEST
+
 /**
  * @brief  Private function converts config register value to uint8_t resolution
  * @param  config_register: value of configuration register.
@@ -49,6 +55,37 @@ DS18B20_Status DS18B20_Start(OneWire_t* OneWire, uint8_t *ROM) {
     OneWire_WriteByte(OneWire, DS18B20_CMD_CONVERTTEMP);
     
     return DS18B20_SUCCESS;
+}
+
+/* start the conversion, and block until success or read failure 
+return SUCCESS, ERROR, or CONVERSION_IN_PROCESS as needed */
+temp_sensor_status_t DS18B20_Wrapper_Read(temp_config_t* temp_config, float* p_temp_deg_c) {
+    if (!temp_config)                             return TEMP_SENSOR_USAGE_ERROR;
+    if (!temp_config->p_one_wire_struct->ROM_NUM) return TEMP_SENSOR_USAGE_ERROR;
+    if (!p_temp_deg_c)                            return TEMP_SENSOR_USAGE_ERROR;
+
+    uint32_t max_conversion_time_ms;
+    uint8_t read_result = DS18B20_FAILURE;
+    
+    /* Begin the conversion */
+    DS18B20_StartAll(temp_config->p_one_wire_struct);
+    max_conversion_time_ms = millis() + DS18B20_MAX_CONVERSION_TIME_MS;
+    /* Read the line until DS18B20 pulls low, signaling the data is ready */
+    while (DS18B20_AllDone(temp_config->p_one_wire_struct)!=DS18B20_SUCCESS){
+        if ( millis() > max_conversion_time_ms ) {
+            /* Presence pulse not detected in time */
+            return TEMP_SENSOR_TIMEOUT;
+        }
+    }  
+    /* Presence pulse detected, perform the read. */
+    read_result = DS18B20_Read(temp_config->p_one_wire_struct, 
+                               temp_config->p_one_wire_struct->ROM_NUM, 
+                               p_temp_deg_c);
+
+    if (read_result == DS18B20_SUCCESS){
+        return TEMP_SENSOR_SUCCESS;
+    }
+    return TEMP_SENSOR_FAILURE;
 }
 
 DS18B20_Status DS18B20_StartAll(OneWire_t* OneWire) {

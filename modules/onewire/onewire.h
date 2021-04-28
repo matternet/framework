@@ -25,8 +25,9 @@
 extern "C" {
 #endif
 
-#include <modules/temp_sensor/temp_sensor.h>
+#include <stdbool.h>
 #include <stdint.h>
+#include <../temp_sensor/temp_sensor.h>
 
 /* OneWire commands */
 #define ONEWIRE_CMD_RSCRATCHPAD         0xBE
@@ -80,7 +81,7 @@ typedef enum {
  * @note   All members except ROM_NUM member are fully private and should not be touched by user.
 
  */
-typedef struct {
+typedef struct OneWire_t {
     uint32_t PalLine;                        /*!< GPIO port to be used for I/O functions */
     uint8_t  LastDiscrepancy;                /*!< Search private */
     uint8_t  LastFamilyDiscrepancy;          /*!< Search private */
@@ -98,6 +99,7 @@ typedef struct {
  * @{
  */
 
+OneWire_t* Get_OW_Struct_t();
 /**
  * @brief  Sleep for time_us microseconds
  * @note   Blocking sleep function. Seems to be faster/more accurate than chThdSleepMicroseconds()
@@ -140,10 +142,15 @@ OneWireStatus OneWire_Output(OneWire_t* OneWireStruct);
 
 /**
  * @brief  Wrapper init function to be used with abstraction temp sensor class;
- * @param  temp_sensor_t: abstract class for temp sensor, holds information for init.
  * @return retval: see defintion of OneWireStatus
  */
-bool OneWire_Wrapper_Init(temp_sensor_t);
+void OneWire_Set_Pal_Line(uint32_t PalLine);
+
+/**
+ * @brief  Wrapper init function to be used with temp_config_t struct;
+ * @return retval: see defintion of temp_sensor_status_t
+ */
+temp_sensor_status_t OneWire_System_Init(temp_config_t* temp_config);
 
 /**
  * @brief  Initializes OneWire struct and set GPIO port.
