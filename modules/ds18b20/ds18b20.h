@@ -72,7 +72,6 @@
 #include "onewire.h"
 #else
 #include <modules/onewire/onewire.h>
-#include <../temp_sensor/temp_sensor.h>
 #endif // UNIT_TEST
 
 /**

@@ -26,14 +26,19 @@ typedef struct temp_config_t {
 
 typedef struct {
 
-    /* pointer to generic init function that return 1 on success 0 on failure,
-    takes in a function whose parameter is temp_sensor_t, which will hold
-    all information regarding the sensor. */  
+    /**
+     * @brief  function pointer to an init function for a temperature sensor
+     * @param  temp_config_t*: pointer to a config struct, should hold any necssary information about the sensor
+     * @return retval: see defintion of OneWireStatus
+     */
     temp_sensor_status_t (*fp_init)(temp_config_t* temp_config);   
 
-    /* pointer to generic read function that return 1 on success 0 on failure,
-    takes in a function whose parameter is temp_sensor_t, which will hold
-    all relevant information regarding the sensor. */  
+    /**
+     * @brief  function pointer to a read function for a temperature sensor
+     * @param  temp_config_t*: pointer to a config struct, should hold any necssary information about the sensor
+     * @param  float*:         pointer to a float, temperature value read will be stored in here. 
+     * @return retval: see defintion of OneWireStatus
+     */
     temp_sensor_status_t (*fp_read)(temp_config_t* temp_config, float* temp);
 
 } temp_sensor_t;

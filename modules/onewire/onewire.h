@@ -27,7 +27,13 @@ extern "C" {
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <../temp_sensor/temp_sensor.h>
+
+#ifdef UNIT_TEST
+#include "temp_sensor.h"
+#else
+#include <modules/temp_sensor/temp_sensor.h>
+#endif // UNIT_TEST
+
 
 /* OneWire commands */
 #define ONEWIRE_CMD_RSCRATCHPAD         0xBE
@@ -99,7 +105,6 @@ typedef struct OneWire_t {
  * @{
  */
 
-OneWire_t* Get_OW_Struct_t();
 /**
  * @brief  Sleep for time_us microseconds
  * @note   Blocking sleep function. Seems to be faster/more accurate than chThdSleepMicroseconds()

@@ -57,34 +57,31 @@ DS18B20_Status DS18B20_Start(OneWire_t* OneWire, uint8_t *ROM) {
     return DS18B20_SUCCESS;
 }
 
-/* start the conversion, and block until success or read failure 
-return SUCCESS, ERROR, or CONVERSION_IN_PROCESS as needed */
 temp_sensor_status_t DS18B20_Wrapper_Read(temp_config_t* temp_config, float* p_temp_deg_c) {
     if (!temp_config)                             return TEMP_SENSOR_USAGE_ERROR;
     if (!temp_config->p_one_wire_struct->ROM_NUM) return TEMP_SENSOR_USAGE_ERROR;
     if (!p_temp_deg_c)                            return TEMP_SENSOR_USAGE_ERROR;
 
-    uint32_t max_conversion_time_ms;
-    uint8_t read_result = DS18B20_FAILURE;
-    
+    uint32_t max_conversion_time_ms;    
     /* Begin the conversion */
     DS18B20_StartAll(temp_config->p_one_wire_struct);
     max_conversion_time_ms = millis() + DS18B20_MAX_CONVERSION_TIME_MS;
-    /* Read the line until DS18B20 pulls low, signaling the data is ready */
-    while (DS18B20_AllDone(temp_config->p_one_wire_struct)!=DS18B20_SUCCESS){
+    
+    /* Read the line until DS18B20 pulls low, signaling the data is ready. 
+       Works more consistently than DS18B20_AllDone. Likely due to 
+       1 less read needed and the time cost associated with that read */
+    DS18B20_Status read_status = DS18B20_CONVERSION_IN_PROGRESS;
+    while (read_status == DS18B20_CONVERSION_IN_PROGRESS){
         if ( millis() > max_conversion_time_ms ) {
             /* Presence pulse not detected in time */
             return TEMP_SENSOR_TIMEOUT;
         }
-    }  
-    /* Presence pulse detected, perform the read. */
-    read_result = DS18B20_Read(temp_config->p_one_wire_struct, 
-                               temp_config->p_one_wire_struct->ROM_NUM, 
-                               p_temp_deg_c);
-
-    if (read_result == DS18B20_SUCCESS){
-        return TEMP_SENSOR_SUCCESS;
+        read_status = DS18B20_Read(temp_config->p_one_wire_struct, 
+                   temp_config->p_one_wire_struct->ROM_NUM, 
+                   p_temp_deg_c);
     }
+
+    if (read_status == DS18B20_SUCCESS) return TEMP_SENSOR_SUCCESS;
     return TEMP_SENSOR_FAILURE;
 }
 
