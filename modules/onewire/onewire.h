@@ -85,7 +85,6 @@ typedef enum {
  * @note   These variations allow specific family types to be targeted or skipped and device present verification 
  * @note   See https://www.maximintegrated.com/en/design/technical-documents/app-notes/1/187.html for more info.
  * @note   All members except ROM_NUM member are fully private and should not be touched by user.
-
  */
 typedef struct OneWire_t {
     uint32_t PalLine;                        /*!< GPIO port to be used for I/O functions */
@@ -144,12 +143,6 @@ OneWireStatus OneWire_Input(OneWire_t* OneWireStruct);
  * @return retval: see defintion of OneWireStatus
  */
 OneWireStatus OneWire_Output(OneWire_t* OneWireStruct);
-
-/**
- * @brief  Wrapper init function to be used with abstraction temp sensor class;
- * @return retval: see defintion of OneWireStatus
- */
-void OneWire_Set_Pal_Line(uint32_t PalLine);
 
 /**
  * @brief  Wrapper init function to be used with temp_config_t struct;
