@@ -27,6 +27,12 @@
 #include "ds18b20.h"
 #include <stdbool.h>
 
+#ifdef UNIT_TEST
+#include "timing.h"
+#else
+#include <modules/timing/timing.h>
+#endif // UNIT_TEST
+
 /**
  * @brief  Private function converts config register value to uint8_t resolution
  * @param  config_register: value of configuration register.

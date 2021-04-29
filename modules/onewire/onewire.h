@@ -25,7 +25,9 @@
 extern "C" {
 #endif
 
+#include <stdbool.h>
 #include <stdint.h>
+
 
 /* OneWire commands */
 #define ONEWIRE_CMD_RSCRATCHPAD         0xBE
@@ -77,7 +79,6 @@ typedef enum {
  * @note   These variations allow specific family types to be targeted or skipped and device present verification 
  * @note   See https://www.maximintegrated.com/en/design/technical-documents/app-notes/1/187.html for more info.
  * @note   All members except ROM_NUM member are fully private and should not be touched by user.
-
  */
 typedef struct {
     uint32_t PalLine;                        /*!< GPIO port to be used for I/O functions */

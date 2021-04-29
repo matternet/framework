@@ -110,6 +110,8 @@
 #define DS18B20_USE_CRC 1
 
 /* DS18B20 Common Numbers */
+#define DS18B20_MAX_CONVERSION_TIME_MS 2000
+
 #define DS18B20_DATA_LSB       0
 #define DS18B20_DATA_MSB       1
 
