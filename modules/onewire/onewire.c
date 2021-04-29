@@ -18,7 +18,6 @@
  */
 
 #ifdef UNIT_TEST
-#include <stdio.h>
 #include "timing.h"
 #else
 #include <modules/timing/timing.h>
