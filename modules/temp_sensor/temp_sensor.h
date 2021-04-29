@@ -21,14 +21,14 @@ typedef struct temp_config_t {
     /* Needed for DS18B20 Setup */
     OneWire_t* p_one_wire_struct;
     uint32_t   one_wire_pal_line;
-    /* Other Temp Sensor Setup goes here */
+    /* Other Temp Sensor params goes here */
 } temp_config_t;
 
 typedef struct {
 
     /**
      * @brief  function pointer to an init function for a temperature sensor
-     * @param  temp_config_t*: pointer to a config struct, should hold any necssary information about the sensor
+     * @param  temp_config_t*: pointer to a config struct, should hold any necessary information about the sensor
      * @return retval: see defintion of OneWireStatus
      */
     temp_sensor_status_t (*fp_init)(temp_config_t* temp_config);   
@@ -41,11 +41,14 @@ typedef struct {
      */
     temp_sensor_status_t (*fp_read)(temp_config_t* temp_config, float* temp);
 
+    /* Eacb temperature sensor must have a config struct properly defined per each sensor*/
+    temp_config_t* temp_config;
+
 } temp_sensor_t;
 
 /* initialize default values */
 
-temp_sensor_status_t temp_sensor_registration(temp_sensor_t* temp_sensor, 
+temp_sensor_status_t register_temp_sensor(temp_sensor_t* temp_sensor, 
                                               temp_sensor_status_t (*fp_init)(temp_config_t* temp_config), 
                                               temp_sensor_status_t (*fp_read)(temp_config_t* temp_config, float* temp));
 
