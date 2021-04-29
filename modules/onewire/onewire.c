@@ -66,18 +66,6 @@ OneWireStatus OneWire_Init(OneWire_t* OneWireStruct, uint32_t PalLine) {
     return ONEWIRE_SUCCESS;
 }
 
-temp_sensor_status_t OneWire_System_Init(temp_config_t* temp_config){
-    if (!(temp_config) || !(temp_config->p_one_wire_struct)) {
-        return TEMP_SENSOR_USAGE_ERROR;
-    }
-    /* set the pal line, try to get the ROM */
-    OneWire_Init(temp_config->p_one_wire_struct, temp_config->one_wire_pal_line);
-    if (OneWire_First(temp_config->p_one_wire_struct) == ONEWIRE_SUCCESS){
-        return TEMP_SENSOR_SUCCESS;
-    }
-    return TEMP_SENSOR_FAILURE;
-}
-
 OneWireStatus OneWire_Reset(OneWire_t* OneWireStruct) {
     if (!OneWireStruct) return ONEWIRE_FAILURE;
     uint8_t presence_pulse = 1;

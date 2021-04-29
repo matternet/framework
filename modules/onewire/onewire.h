@@ -28,12 +28,6 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
-#ifdef UNIT_TEST
-#include "temp_sensor.h"
-#else
-#include <modules/temp_sensor/temp_sensor.h>
-#endif // UNIT_TEST
-
 
 /* OneWire commands */
 #define ONEWIRE_CMD_RSCRATCHPAD         0xBE
@@ -86,7 +80,7 @@ typedef enum {
  * @note   See https://www.maximintegrated.com/en/design/technical-documents/app-notes/1/187.html for more info.
  * @note   All members except ROM_NUM member are fully private and should not be touched by user.
  */
-typedef struct OneWire_t {
+typedef struct {
     uint32_t PalLine;                        /*!< GPIO port to be used for I/O functions */
     uint8_t  LastDiscrepancy;                /*!< Search private */
     uint8_t  LastFamilyDiscrepancy;          /*!< Search private */
@@ -143,12 +137,6 @@ OneWireStatus OneWire_Input(OneWire_t* OneWireStruct);
  * @return retval: see defintion of OneWireStatus
  */
 OneWireStatus OneWire_Output(OneWire_t* OneWireStruct);
-
-/**
- * @brief  Wrapper init function to be used with temp_config_t struct;
- * @return retval: see defintion of temp_sensor_status_t
- */
-temp_sensor_status_t OneWire_System_Init(temp_config_t* temp_config);
 
 /**
  * @brief  Initializes OneWire struct and set GPIO port.

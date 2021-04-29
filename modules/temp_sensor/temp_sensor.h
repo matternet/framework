@@ -1,11 +1,11 @@
 #ifndef TEMP_SENSOR_H
 #define TEMP_SENSOR_H
 
-#include <stdbool.h>
-#include <stdint.h>
-
-// forward declaration of OneWire_t will use as abstraction
-typedef struct OneWire_t OneWire_t;
+#ifdef UNIT_TEST
+#include "ds18b20.h"
+#else
+#include <modules/ds18b20/ds18b20.h>
+#endif /* UNIT_TEST */
 
 /* General Temp Sensor return codes */
 typedef enum {
@@ -17,7 +17,7 @@ typedef enum {
 } temp_sensor_status_t;
 
 // hold onto all information needed for sensors
-typedef struct temp_config_t {
+typedef struct {
     /* Needed for DS18B20 Setup */
     OneWire_t* p_one_wire_struct;
     uint32_t   one_wire_pal_line;
@@ -49,8 +49,13 @@ typedef struct {
 /* initialize default values */
 
 temp_sensor_status_t register_temp_sensor(temp_sensor_t* temp_sensor, 
-                                              temp_sensor_status_t (*fp_init)(temp_config_t* temp_config), 
-                                              temp_sensor_status_t (*fp_read)(temp_config_t* temp_config, float* temp));
+                                          temp_sensor_status_t (*fp_init)(temp_config_t* temp_config), 
+                                          temp_sensor_status_t (*fp_read)(temp_config_t* temp_config, float* temp));
+
+
+temp_sensor_status_t OneWire_System_Init(temp_config_t* temp_config);
+
+temp_sensor_status_t DS18B20_Wrapper_Read(temp_config_t* temp_config, float* p_temp_degC); 
 
 #endif /* TEMP_SENSOR_H */
 

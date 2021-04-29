@@ -173,14 +173,6 @@ typedef enum {
 DS18B20_Status DS18B20_Start(OneWire_t* OneWireStruct, uint8_t* ROM);
 
 /**
- * @brief  Starts the conversion process AND modifies value of p_temp_degC with measured temperature.
- * @param  *temp_config : address of temp_config struct, with an initialized onewire struct
- * @param  *p_temp_degC: address of float to store measured temperature
- * @return retval: see defintion of temp_sensor_status_t
- */
-temp_sensor_status_t DS18B20_Wrapper_Read(temp_config_t* temp_config, float* p_temp_degC); 
-
-/**
  * @brief  Starts temperature conversion for all DS18B20 devices on specific onewire channel
  * @note   This mode will skip ROM addressing
  * @param  *OneWireStruct: Pointer to @ref OneWire_t working structure (OneWire channel)

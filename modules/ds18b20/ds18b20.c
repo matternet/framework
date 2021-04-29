@@ -57,33 +57,6 @@ DS18B20_Status DS18B20_Start(OneWire_t* OneWire, uint8_t *ROM) {
     return DS18B20_SUCCESS;
 }
 
-temp_sensor_status_t DS18B20_Wrapper_Read(temp_config_t* temp_config, float* p_temp_degC) {
-    if (!p_temp_degC              ||
-        !temp_config              ||
-        !temp_config->p_one_wire_struct->ROM_NUM) {
-         return TEMP_SENSOR_USAGE_ERROR;
-    }
-
-    /* Begin the conversion */
-    DS18B20_StartAll(temp_config->p_one_wire_struct);
-    uint32_t ts_start_ms = millis();
-    
-    /* Read the line until DS18B20 pulls low, signaling the data is ready. 
-       Works more consistently than DS18B20_AllDone. Likely due to 
-       1 less read needed and the time cost associated with that read */
-    DS18B20_Status read_status = DS18B20_CONVERSION_IN_PROGRESS;
-    while (read_status == DS18B20_CONVERSION_IN_PROGRESS){
-        if ( millis() > (uint32_t) ts_start_ms + DS18B20_MAX_CONVERSION_TIME_MS ) {
-            /* Presence pulse not detected in time */
-            return TEMP_SENSOR_TIMEOUT;
-        }
-        read_status = DS18B20_Read(temp_config->p_one_wire_struct, 
-                                   temp_config->p_one_wire_struct->ROM_NUM, 
-                                   p_temp_degC);
-    }
-    return (read_status == DS18B20_SUCCESS) ? TEMP_SENSOR_SUCCESS : TEMP_SENSOR_FAILURE;
-}
-
 DS18B20_Status DS18B20_StartAll(OneWire_t* OneWire) {
     if (!OneWire) return DS18B20_USAGE_ERROR;
     /* Reset pulse, abort if presence pulse is not good */
