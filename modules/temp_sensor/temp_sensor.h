@@ -29,7 +29,7 @@ typedef struct {
     /**
      * @brief  function pointer to an init function for a temperature sensor
      * @param  temp_config_t*: pointer to a config struct, should hold any necessary information about the sensor
-     * @return retval: see defintion of OneWireStatus
+     * @return retval: see defintion of temp_sensor_status_t
      */
     temp_sensor_status_t (*fp_init)(temp_config_t* temp_config);   
 
@@ -37,7 +37,7 @@ typedef struct {
      * @brief  function pointer to a read function for a temperature sensor
      * @param  temp_config_t*: pointer to a config struct, should hold any necssary information about the sensor
      * @param  float*:         pointer to a float, temperature value read will be stored in here. 
-     * @return retval: see defintion of OneWireStatus
+     * @return retval: see defintion of temp_sensor_status_t
      */
     temp_sensor_status_t (*fp_read)(temp_config_t* temp_config, float* temp);
 

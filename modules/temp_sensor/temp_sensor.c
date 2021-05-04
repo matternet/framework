@@ -57,8 +57,9 @@ temp_sensor_status_t OneWire_System_Init(temp_config_t* temp_config){
  */
 
 temp_sensor_status_t DS18B20_Wrapper_Read(temp_config_t* temp_config, float* p_temp_degC) {
-    if (!p_temp_degC              ||
-        !temp_config              ||
+    if (!p_temp_degC                      ||
+        !temp_config                      ||
+        !temp_config->p_one_wire_struct   ||
         !temp_config->p_one_wire_struct->ROM_NUM) {
          return TEMP_SENSOR_USAGE_ERROR;
     }
