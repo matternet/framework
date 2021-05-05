@@ -13,7 +13,6 @@
 #include "timing.h"
 #else
 #include <modules/timing/timing.h>
-#include <modules/uavcan_debug/uavcan_debug.h>
 #endif // UNIT_TEST
 
 /**
@@ -100,8 +99,9 @@ temp_sensor_status_t DS18B20_Wrapper_Read(temp_config_t* temp_config, float* p_t
  * @param  env_status    : pointer to an env_status struct. Commonly used for publishing.
  * @return retval:         None
  */
-void temp_sensor_update_fields_for_env_status_msg(temp_sensor_t* temp_sensor, struct com_matternet_equipment_env_EnvStatus_s* env_status){
-    uavcan_send_debug_msg(UAVCAN_PROTOCOL_DEBUG_LOGLEVEL_INFO, "temp_sensor_update_fields_for_env_status_msg", "");    
+/* XXX(vwnguyen): DSDSL definitions are only generated when making with hardware, lets ignore this for unit testing. */
+#ifndef UNIT_TEST
+void temp_sensor_update_fields_for_env_status_msg(temp_sensor_t* temp_sensor, struct com_matternet_equipment_env_EnvStatus_s* env_status){   
     /* initialize to some obviously wrong value, retains last value for easier plotting, and is likely the scenario since temperature does not fluctuate rapidly */
     static float temp_degC = -200.0;
     static temp_sensor_status_t read_error = TEMP_SENSOR_FAILURE;
@@ -112,3 +112,4 @@ void temp_sensor_update_fields_for_env_status_msg(temp_sensor_t* temp_sensor, st
     if (env_status->temp_sensor_read_error)
         env_status->temp_sensor_total_errors++;
 }
+#endif /* UNIT_TEST */

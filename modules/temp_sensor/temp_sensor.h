@@ -57,7 +57,12 @@ temp_sensor_status_t OneWire_System_Init(temp_config_t* temp_config);
 
 temp_sensor_status_t DS18B20_Wrapper_Read(temp_config_t* temp_config, float* p_temp_degC); 
 
+
+/* XXX(vwnguyen): DSDSL definitions are only generated when making with hardware,  */
+#ifndef UNIT_TEST
 void temp_sensor_update_fields_for_env_status_msg(temp_sensor_t* temp_sensor, struct com_matternet_equipment_env_EnvStatus_s* env_status);
+#endif /*UNIT_TEST */
+
 
 #endif /* TEMP_SENSOR_H */
 
