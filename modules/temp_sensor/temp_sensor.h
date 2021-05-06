@@ -5,6 +5,7 @@
 #include "ds18b20.h"
 #else
 #include <modules/ds18b20/ds18b20.h>
+#include <com.matternet.equipment.env.EnvStatus.h>
 #endif /* UNIT_TEST */
 
 /* General Temp Sensor return codes */
@@ -16,7 +17,7 @@ typedef enum {
     TEMP_SENSOR_SUCCESS                 =   0  // Operation Successful
 } temp_sensor_status_t;
 
-// hold onto all information needed for sensors
+/* hold onto all information needed for sensors */
 typedef struct {
     /* Needed for DS18B20 Setup */
     OneWire_t* p_one_wire_struct;
@@ -25,11 +26,10 @@ typedef struct {
 } temp_config_t;
 
 typedef struct {
-
     /**
      * @brief  function pointer to an init function for a temperature sensor
      * @param  temp_config_t*: pointer to a config struct, should hold any necessary information about the sensor
-     * @return retval: see defintion of OneWireStatus
+     * @return retval: see defintion of temp_sensor_status_t
      */
     temp_sensor_status_t (*fp_init)(temp_config_t* temp_config);   
 
@@ -37,11 +37,11 @@ typedef struct {
      * @brief  function pointer to a read function for a temperature sensor
      * @param  temp_config_t*: pointer to a config struct, should hold any necssary information about the sensor
      * @param  float*:         pointer to a float, temperature value read will be stored in here. 
-     * @return retval: see defintion of OneWireStatus
+     * @return retval: see defintion of temp_sensor_status_t
      */
     temp_sensor_status_t (*fp_read)(temp_config_t* temp_config, float* temp);
 
-    /* Eacb temperature sensor must have a config struct properly defined per each sensor*/
+    /* Eacb temperature sensor must have a config struct properly defined per each sensor */
     temp_config_t* temp_config;
 
 } temp_sensor_t;
@@ -56,6 +56,13 @@ temp_sensor_status_t register_temp_sensor(temp_sensor_t* temp_sensor,
 temp_sensor_status_t OneWire_System_Init(temp_config_t* temp_config);
 
 temp_sensor_status_t DS18B20_Wrapper_Read(temp_config_t* temp_config, float* p_temp_degC); 
+
+
+/* XXX(vwnguyen): DSDSL definitions are only generated when making with hardware,  */
+#ifndef UNIT_TEST
+void temp_sensor_update_fields_for_env_status_msg(temp_sensor_t* temp_sensor, struct com_matternet_equipment_env_EnvStatus_s* env_status);
+#endif /*UNIT_TEST */
+
 
 #endif /* TEMP_SENSOR_H */
 
