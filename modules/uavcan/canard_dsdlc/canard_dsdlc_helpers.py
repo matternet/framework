@@ -1,5 +1,7 @@
+#!/usr/bin/env python3
+
 import os
-import uavcan
+import pyuavcan_v0 as uavcan
 import errno
 import em
 import math
