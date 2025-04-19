@@ -3,7 +3,7 @@
 import pyuavcan_v0 as uavcan
 import argparse
 import os
-import em
+import em   # NOTE: must use empy v3.3.4
 from canard_dsdlc_helpers import *
 
 templates = [
