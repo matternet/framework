@@ -1,7 +1,9 @@
+#!/usr/bin/env python3
+
 import os
-import uavcan
+import pyuavcan_v0 as uavcan
 import errno
-import em
+import em   # NOTE: must use empy v3.3.4
 import math
 import copy
 

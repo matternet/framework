@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import crcmod.predefined
 import sys
 import os
@@ -5,7 +7,7 @@ import binascii
 import struct
 
 app_descriptor_fmt = "<8cQI"
-SHARED_APP_DESCRIPTOR_SIGNATURES = ["\xd7\xe4\xf7\xba\xd0\x0f\x9b\xee", "\x40\xa2\xe4\xf1\x64\x68\x91\x06"]
+SHARED_APP_DESCRIPTOR_SIGNATURES = [b"\xd7\xe4\xf7\xba\xd0\x0f\x9b\xee", b"\x40\xa2\xe4\xf1\x64\x68\x91\x06"]
 
 crc64 = crcmod.predefined.Crc('crc-64-we')
 
